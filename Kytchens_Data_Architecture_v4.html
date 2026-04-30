@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kytchens · Data Architecture</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --o1:#F4631A;--o2:#C94E0E;--o3:#F7894A;--o4:#FDE8D8;--o5:#FFF6F0;
+  --am:#F5A623;--ink:#1C1007;--ink2:#4A3728;--ink3:#8C7060;
+  --line:#EDD5C0;--smoke:#FAF5F0;--white:#FFFFFF;
+  --green:#1E8449;--gl:#D5F5E3;--blue:#1A5276;--bl:#D6EAF8;
+  --red:#922B21;--rl:#FADBD8;--purple:#5B2C7A;--pl:#F5EEF8;
+  --teal:#0E6655;--tl:#D1F2EB;--amber:#7D5A00;--al:#FDEBD0;
+}
+body{font-family:'Poppins','Liberation Sans',sans-serif;background:#EDE5DC;color:var(--ink);font-size:13px;line-height:1.5;}
+.page{width:1160px;margin:0 auto 44px;background:var(--white);border-radius:20px;overflow:hidden;box-shadow:0 2px 28px rgba(0,0,0,.09);page-break-after:always;}
+
+/* COVER */
+.cover{background:linear-gradient(138deg,#140C04 0%,#2E1208 38%,#C94E0E 100%);padding:60px 72px 52px;min-height:720px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;}
+.ring{position:absolute;border-radius:50%;border:1px solid rgba(244,99,26,.2);pointer-events:none;}
+.r1{width:560px;height:560px;top:-200px;right:-140px;}.r2{width:340px;height:340px;top:-60px;right:80px;}.r3{width:160px;height:160px;top:80px;right:200px;}.r4{width:800px;height:800px;bottom:-360px;left:-240px;border-color:rgba(245,166,35,.08);}
+.cv-tag{font-size:10px;font-weight:600;letter-spacing:3px;color:var(--o3);text-transform:uppercase;}
+.cv-title{font-size:64px;font-weight:900;line-height:.95;color:#fff;letter-spacing:-2px;margin-top:28px;}
+.cv-title span{color:var(--o3);}
+.cv-sub{font-size:14px;font-weight:300;color:rgba(255,255,255,.6);margin-top:14px;max-width:560px;line-height:1.6;}
+.cv-pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:28px;}
+.cv-pill{padding:5px 14px;border-radius:100px;border:1px solid rgba(255,255,255,.18);font-size:10px;font-weight:500;color:rgba(255,255,255,.75);background:rgba(255,255,255,.07);}
+.cv-foot{display:flex;justify-content:space-between;align-items:flex-end;border-top:1px solid rgba(255,255,255,.1);padding-top:22px;}
+.cv-stat-n{font-size:26px;font-weight:800;color:var(--o3);}
+.cv-stat-l{font-size:9px;color:rgba(255,255,255,.45);font-weight:400;margin-top:1px;}
+
+/* SHELL */
+.ph{display:flex;align-items:stretch;}
+.ph-bar{background:var(--o1);color:#fff;font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;padding:20px 11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;writing-mode:vertical-lr;transform:rotate(180deg);}
+.ph-body{flex:1;padding:32px 44px 36px;}
+.ph-title{font-size:20px;font-weight:800;color:var(--o2);margin-bottom:3px;}
+.ph-sub{font-size:11px;color:var(--ink3);margin-bottom:20px;font-weight:400;}
+.pf{background:var(--o5);border-top:1px solid var(--line);padding:10px 44px;display:flex;justify-content:space-between;align-items:center;}
+.pf-brand{font-size:11px;font-weight:800;color:var(--o1);letter-spacing:1px;}
+.pf-pg{font-size:9px;color:var(--ink3);}
+
+/* UTILS */
+.sl{display:inline-flex;align-items:center;gap:7px;margin-bottom:8px;}
+.sl-dot{width:7px;height:7px;border-radius:50%;background:var(--o1);}
+.sl-txt{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--o1);}
+.co{padding:10px 14px;border-radius:8px;font-size:10.5px;color:var(--ink2);line-height:1.6;border-left:3px solid;margin:10px 0;}
+.co-o{background:var(--o4);border-color:var(--o1);}
+.co-b{background:var(--bl);border-color:var(--blue);}
+.co-g{background:var(--gl);border-color:var(--green);}
+.co-r{background:var(--rl);border-color:var(--red);}
+.co strong{color:var(--o2);}
+.dv{height:1px;background:var(--line);margin:16px 0;}
+.gap{height:13px;}
+
+/* SOURCE CARDS */
+.src-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;}
+.src-card{border:1.5px solid var(--line);border-radius:12px;padding:15px 13px;background:var(--white);position:relative;}
+.src-card.warn{background:#FFFBF8;border-color:#F5C6A0;}
+.src-card.ok{background:#F8FFF9;border-color:#A8DFB5;}
+.src-ico{font-size:22px;margin-bottom:8px;display:block;}
+.src-sys{font-size:8.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--o3);margin-bottom:3px;}
+.src-name{font-size:12px;font-weight:700;color:var(--ink);margin-bottom:5px;}
+.src-desc{font-size:10px;color:var(--ink3);line-height:1.5;}
+.src-pain{margin-top:8px;padding:6px 8px;background:var(--o4);border-radius:5px;font-size:9px;color:var(--o2);font-weight:500;line-height:1.4;}
+.src-pain::before{content:'⚠ ';}
+.src-tag{position:absolute;top:11px;right:11px;font-size:8px;font-weight:700;padding:2px 7px;border-radius:100px;}
+.tag-live{background:var(--gl);color:var(--green);}
+.tag-email{background:var(--al);color:var(--amber);}
+.tag-ext{background:var(--bl);color:var(--blue);}
+.tag-miss{background:var(--rl);color:var(--red);}
+.tag-csv{background:var(--pl);color:var(--purple);}
+
+/* FLOW */
+.flow{display:flex;flex-direction:column;gap:13px;}
+.flow-row{display:flex;align-items:center;}
+.fl{font-size:8.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink3);width:92px;flex-shrink:0;text-align:right;padding-right:11px;}
+.fn{border-radius:9px;padding:7px 11px;font-size:9.5px;font-weight:600;text-align:center;border:1.5px solid;min-width:110px;flex-shrink:0;}
+.fn-src{background:var(--o5);border-color:var(--o3);color:var(--o2);}
+.fn-raw{background:var(--o4);border-color:var(--o1);color:var(--o2);}
+.fn-stg{background:var(--al);border-color:var(--am);color:var(--amber);}
+.fn-mart{background:var(--tl);border-color:#48C9B0;color:var(--teal);}
+.fn-kpi{background:var(--bl);border-color:#5DADE2;color:var(--blue);}
+.fn-sem{background:var(--pl);border-color:#A569BD;color:var(--purple);}
+.fn-dead{background:var(--rl);border-color:#E59898;color:var(--red);}
+.fn-sht{background:#FDFDE8;border-color:#D4AC0D;color:var(--amber);}
+.fn-sub{font-size:8px;font-weight:400;opacity:.7;margin-top:1px;}
+.fa{flex:1;position:relative;height:2px;background:var(--line);margin:0 4px;min-width:16px;}
+.fa::after{content:'▶';position:absolute;right:-5px;top:50%;transform:translateY(-50%);color:var(--o1);font-size:9px;}
+.fa .lbl{position:absolute;top:-15px;left:50%;transform:translateX(-50%);font-size:8px;color:var(--ink3);white-space:nowrap;background:white;padding:0 3px;}
+.fa.dash{background:repeating-linear-gradient(90deg,var(--line) 0,var(--line) 4px,transparent 4px,transparent 8px);}
+.fa.red{background:repeating-linear-gradient(90deg,#F1948A 0,#F1948A 4px,transparent 4px,transparent 8px);}
+.fa.red::after{color:var(--red);}
+.flow-sep{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);margin:12px 0 6px 104px;display:flex;align-items:center;gap:8px;}
+.flow-sep::after{content:'';flex:1;height:1px;background:var(--line);}
+
+/* LAYERS */
+.layers{display:flex;flex-direction:column;gap:9px;}
+.layer{display:grid;grid-template-columns:50px 155px 1fr 90px;border-radius:11px;overflow:hidden;border:1.5px solid var(--line);min-height:68px;}
+.l-num{display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:rgba(255,255,255,.9);}
+.l-meta{padding:12px 14px;display:flex;flex-direction:column;justify-content:center;border-left:1px solid rgba(255,255,255,.15);}
+.l-name{font-size:12px;font-weight:700;color:#fff;}
+.l-schema{font-size:8px;font-weight:500;font-family:'Courier New',monospace;color:rgba(255,255,255,.6);margin-top:3px;}
+.l-body{padding:11px 18px;border-left:1px solid var(--line);background:var(--white);}
+.l-chips{display:flex;flex-wrap:wrap;gap:4px;}
+.l-chip{font-size:8px;font-weight:600;padding:2px 8px;border-radius:100px;border:1px solid var(--line);color:var(--ink2);font-family:'Courier New',monospace;background:var(--smoke);}
+.l-desc{font-size:9px;color:var(--ink3);margin-top:5px;line-height:1.5;}
+.l-right{padding:11px 14px;border-left:1px solid var(--line);background:var(--white);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;}
+.l-cad{font-size:11px;font-weight:700;color:var(--o1);}
+.l-clbl{font-size:8px;color:var(--ink3);margin-top:1px;}
+.l0 .l-num,.l0 .l-meta{background:#9E3209;}
+.l1 .l-num,.l1 .l-meta{background:#C94E0E;}
+.l2 .l-num,.l2 .l-meta{background:var(--o1);}
+.l3 .l-num,.l3 .l-meta{background:#117A65;}
+.l4 .l-num,.l4 .l-meta{background:#1A5276;}
+
+/* TABLE CARDS */
+.tg2{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+.tg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px;}
+.tc{border-radius:11px;overflow:hidden;border:1.5px solid var(--line);}
+.tc-head{padding:10px 13px;display:flex;justify-content:space-between;align-items:flex-end;}
+.tc-name{font-size:11px;font-weight:700;color:#fff;font-family:'Courier New',monospace;}
+.tc-grain{font-size:8px;color:rgba(255,255,255,.65);}
+.ho{background:linear-gradient(135deg,var(--o2),var(--o1));}
+.ht{background:linear-gradient(135deg,#0E6655,#17A589);}
+.hb{background:linear-gradient(135deg,#154360,#1F618D);}
+.hp{background:linear-gradient(135deg,#4A235A,#7D3C98);}
+.hg{background:linear-gradient(135deg,#145A32,#229954);}
+.ha{background:linear-gradient(135deg,#6E4F00,#D4AC0D);}
+.hd{background:linear-gradient(135deg,#2C3E50,#4A6080);}
+.tr{display:grid;grid-template-columns:1.1fr .65fr 1.3fr;border-bottom:1px solid var(--line);padding:4px 11px;align-items:center;}
+.tr:last-child{border-bottom:none;}
+.tr:nth-child(even){background:var(--o5);}
+.tr.hdr{background:var(--smoke);border-bottom:1.5px solid var(--line);}
+.cn{font-family:'Courier New',monospace;font-weight:600;color:var(--ink);font-size:9.5px;}
+.ct{font-size:8.5px;color:var(--o2);font-weight:600;}
+.cd{color:var(--ink3);font-size:8.5px;}
+.pk{color:var(--am);}
+.fk{color:var(--blue);}
+.gen{color:var(--green);}
+.tn{font-size:7px;padding:1px 5px;border-radius:3px;font-weight:700;margin-left:3px;vertical-align:middle;}
+.tn-new{background:var(--gl);color:var(--green);}
+.tn-fix{background:var(--rl);color:var(--red);}
+.tn-ex{background:var(--al);color:var(--amber);}
+.tn-raw{background:var(--pl);color:var(--purple);}
+
+/* MODULES */
+.mod-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.mod{border-radius:11px;overflow:hidden;border:1.5px solid var(--line);}
+.mod-h{padding:12px 14px;}
+.mod-ico{font-size:20px;margin-bottom:6px;}
+.mod-nm{font-size:11px;font-weight:700;}
+.mod-sb{font-size:9px;opacity:.75;margin-top:1px;}
+.mod-b{padding:10px 13px;background:var(--white);border-top:1px solid var(--line);}
+.mod-item{font-size:9px;color:var(--ink2);padding:3px 0;border-bottom:1px solid var(--o5);display:flex;justify-content:space-between;align-items:center;}
+.mod-item:last-child{border-bottom:none;}
+.mod-key{font-family:'Courier New',monospace;font-size:8px;color:var(--o2);background:var(--o4);padding:1px 5px;border-radius:3px;font-weight:600;white-space:nowrap;}
+.m-o .mod-h{background:linear-gradient(135deg,var(--o2),var(--o1));color:#fff;}
+.m-t .mod-h{background:linear-gradient(135deg,#0E6655,#17A589);color:#fff;}
+.m-b .mod-h{background:linear-gradient(135deg,#154360,#1F618D);color:#fff;}
+.m-p .mod-h{background:linear-gradient(135deg,#4A235A,#7D3C98);color:#fff;}
+.m-a .mod-h{background:linear-gradient(135deg,#6E4F00,#D4AC0D);color:#fff;}
+.m-g .mod-h{background:linear-gradient(135deg,#145A32,#229954);color:#fff;}
+
+/* RULES */
+.rg{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.rule{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:var(--o5);border-radius:9px;border-left:3px solid var(--o1);}
+.rn{width:22px;height:22px;border-radius:50%;background:var(--o1);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.rt{font-size:10px;color:var(--ink2);line-height:1.5;}
+.rt strong{color:var(--o2);}
+
+/* KPI TABLE */
+.kpi-table{width:100%;border-collapse:collapse;font-size:10px;}
+.kpi-table th{background:var(--o1);color:#fff;padding:7px 12px;text-align:left;font-weight:600;font-size:9px;letter-spacing:.5px;}
+.kpi-table td{padding:6px 12px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.4;}
+.kpi-table tr:nth-child(even) td{background:var(--o5);}
+.kpi-table tr:last-child td{border-bottom:none;}
+.kpi-cat td{background:var(--smoke)!important;font-weight:700;font-size:9px;color:var(--ink2);letter-spacing:.5px;}
+
+/* LEGEND */
+.legend{display:flex;flex-wrap:wrap;gap:14px;padding:10px 16px;background:var(--smoke);border-radius:9px;margin-top:12px;}
+.leg-i{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--ink3);}
+.leg-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+
+/* INGEST DETAIL BOX */
+.ingest-box{border:1.5px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:13px;}
+.ingest-head{background:var(--smoke);padding:8px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);}
+.ingest-name{font-size:11px;font-weight:700;color:var(--ink);}
+.ingest-how{font-size:9px;font-weight:600;padding:2px 8px;border-radius:100px;background:var(--o4);color:var(--o2);}
+.ingest-body{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;}
+.ingest-col{padding:10px 14px;border-right:1px solid var(--line);font-size:9.5px;}
+.ingest-col:last-child{border-right:none;}
+.ingest-label{font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink3);margin-bottom:5px;}
+.ingest-item{padding:2px 0;color:var(--ink2);border-bottom:1px solid var(--o5);}
+.ingest-item:last-child{border-bottom:none;}
+.ingest-item code{font-family:'Courier New',monospace;font-size:8.5px;color:var(--o2);font-weight:600;}
+</style>
+</head>
+<body>
+
+<!-- PAGE 1 — COVER -->
+<div class="page">
+<div class="cover">
+  <div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div><div class="ring r4"></div>
+  <div>
+    <div class="cv-tag">Kytchens · Data Architecture · April 2026 · v4.0</div>
+    <div class="cv-title">Data<br><span>Architecture</span><br>Blueprint</div>
+    <div class="cv-sub">Ground-up design built on actual file schemas — Bravery CSV, Complaints email, UrbanPiper ClickHouse data. Seven sources unified into one intelligent, queryable system.</div>
+    <div class="cv-pills">
+      <span class="cv-pill">UrbanPiper → BraveryKOA → MySQL → ClickHouse</span>
+      <span class="cv-pill">SupplyNote → Email → Inventory</span>
+      <span class="cv-pill">Bravery Photo CSV → Evidence + Maker/Checker</span>
+      <span class="cv-pill">Complaints → Email → Evidence</span>
+      <span class="cv-pill">Keka HRMS → People</span>
+      <span class="cv-pill">Tally → Finance</span>
+      <span class="cv-pill">POS + Manual Sales</span>
+    </div>
+  </div>
+  <div class="cv-foot">
+    <div><div class="cv-stat-n">7</div><div class="cv-stat-l">Data Sources</div></div>
+    <div><div class="cv-stat-n">5</div><div class="cv-stat-l">Pipeline Layers</div></div>
+    <div><div class="cv-stat-n">6</div><div class="cv-stat-l">Business Modules</div></div>
+    <div><div class="cv-stat-n">18</div><div class="cv-stat-l">Core Tables</div></div>
+    <div><div class="cv-stat-n">15m</div><div class="cv-stat-l">Target Freshness</div></div>
+    <div style="text-align:right"><div style="font-size:9px;color:rgba(255,255,255,.35)">Confidential · Internal Design</div><div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:3px">ClickHouse + Supabase</div></div>
+  </div>
+</div>
+<div class="pf"><div class="pf-brand">KYTCHENS</div><div class="pf-pg">1 of 9</div></div>
+</div>
+
+<!-- PAGE 2 — DATA SOURCES -->
+<div class="page">
+<div class="ph">
+  <div class="ph-bar">Data Sources</div>
+  <div class="ph-body">
+    <div class="ph-title">Seven Sources — One System</div>
+    <div class="ph-sub">What each source holds, how it arrives, and what needs to change. Only UrbanPiper data arrives via webhook. Everything else arrives via email, CSV, or manual entry.</div>
+    <div class="src-grid">
+
+      <div class="src-card ok">
+        <span class="src-tag tag-live">Webhook ✓</span>
+        <span class="src-ico">🍽️</span>
+        <div class="src-sys">Orders · POS · Aggregator</div>
+        <div class="src-name">UrbanPiper → ClickHouse</div>
+        <div class="src-desc">Only source with live webhook integration. Swiggy &amp; Zomato orders aggregated via UrbanPiper, buffered through BraveryKOA server, ingested into MySQL on AWS, ETL'd into ClickHouse. Five live tables. <strong>aggregated_data</strong> already functions as a Layer 3 KPI table with correct Decimal types. All financial columns were degraded to String during ClickHouse migration — needs type correction at staging.</div>
+      </div>
+
+      <div class="src-card warn">
+        <span class="src-tag tag-email">Hourly Email</span>
+        <span class="src-ico">📦</span>
+        <div class="src-sys">Inventory ERP</div>
+        <div class="src-name">SupplyNote</div>
+        <div class="src-desc">Point-in-time stock snapshot delivered via <strong>scheduled hourly email</strong> as CSV attachment. Manual download → clean → paste into brand-specific Google Sheet per location. OOS checked by manually comparing current stock vs par level in a separate sheet. Stock in/out transaction data is available via UrbanPiper webhook (configurable) — this is more valuable than snapshots as it gives movement history.</div>
+        <div class="src-pain">No DB. Every snapshot overwrites the last. OOS history is zero. Manual sheet process is error-prone.</div>
+      </div>
+
+      <div class="src-card warn">
+        <span class="src-tag tag-csv">Alt-day CSV</span>
+        <span class="src-ico">📸</span>
+        <div class="src-sys">Photo Evidence · Maker · Checker</div>
+        <div class="src-name">Bravery Photo App</div>
+        <div class="src-desc">Every packed order is photographed before dispatch. Bulk CSV downloaded every alternate day. File contains: <strong>order_id</strong> (= UP Order ID), <strong>aggregator_order_no</strong> (= Aggregator Order ID), <strong>maker</strong>, <strong>Checker</strong>, <strong>order_captured_by</strong> (supervisor), kitchen_name, brand_name, photo filename, capture timestamp, is_order_image_captured flag. Photos stored on Bravery server for <strong>14 days then deleted</strong>.</div>
+        <div class="src-pain">Photo metadata not in DB. Evidence window closes silently. Alt-day import means up to 48-hour lag.</div>
+      </div>
+
+      <div class="src-card warn">
+        <span class="src-tag tag-email">Email CSV</span>
+        <span class="src-ico">💬</span>
+        <div class="src-sys">Complaints · ORM</div>
+        <div class="src-name">Restaverse</div>
+        <div class="src-desc">Complaints received as a <strong>daily email with CSV attachment</strong> — not via API. File contains: <strong>order_id</strong> (= Aggregator Order ID), <strong>res_id</strong> (= quint_id = Store ID), brand, subzone, platform, reason (raw), comment, media URL, complaint_item_names, cart_item_names, requested_refund_amount, complain_status (DISMISSED / UNRESOLVED), order_created_at, complaint_created_at. Currently processed manually — cleaned output is stale.</div>
+        <div class="src-pain">Manual process. Cleaned output stale. No automated ingestion. Complaint resolution history not tracked.</div>
+      </div>
+
+      <div class="src-card warn">
+        <span class="src-tag tag-email">Sheet</span>
+        <span class="src-ico">💰</span>
+        <div class="src-sys">Commercial Config</div>
+        <div class="src-name">Brand Map Sheet</div>
+        <div class="src-desc">Google Sheet: brand name, location, quint_id (= up_store_ref_id = Store ID), MG rental, revenue share %, go-live date. The existing brand_revenue table in ClickHouse has only brand + revenue_model — no commercial config. quint_id is the key that bridges every brand/location to UrbanPiper store references, SupplyNote outlet names, and the complaints res_id.</div>
+        <div class="src-pain">MG and rev share stored as text with ₹ and % symbols. No types, no FK, no version control.</div>
+      </div>
+
+      <div class="src-card warn">
+        <span class="src-tag tag-ext">HRMS</span>
+        <span class="src-ico">👥</span>
+        <div class="src-sys">People Data</div>
+        <div class="src-name">Keka</div>
+        <div class="src-desc">All employee records — name, designation, kitchen assignment, reporting structure. Maker and checker names in the Bravery CSV (e.g. "ganesh g", "Deepak R", "Pawan B") are free-text strings. order_captured_by (supervisor) is also free text. These need to be resolved to Keka employee IDs for staff performance attribution to work. One-way sync from Keka into dim_employees.</div>
+        <div class="src-pain">Zero integration. Staff performance analytics impossible without Keka ID resolution.</div>
+      </div>
+
+      <div class="src-card warn">
+        <span class="src-tag tag-ext">Finance</span>
+        <span class="src-ico">📒</span>
+        <div class="src-sys">Invoicing</div>
+        <div class="src-name">Tally</div>
+        <div class="src-desc">All invoicing and financial accounting. Settlement figures calculated from Brand Map sheet cannot be auto-pushed to Tally. The monthly_settlement table in the Analytics layer is designed to produce the exact format Tally needs — bridging UrbanPiper GMV to Tally invoices for the first time, eliminating the current manual reconciliation.</div>
+        <div class="src-pain">Manual reconciliation between UrbanPiper GMV and Tally invoices every month.</div>
+      </div>
+
+      <div class="src-card warn">
+        <span class="src-tag tag-email">Manual Entry</span>
+        <span class="src-ico">✍️</span>
+        <div class="src-sys">Offline Revenue</div>
+        <div class="src-name">POS + Manual Sales</div>
+        <div class="src-desc">POS sales, rental brand sales, event sales — entered manually in varied formats across different sheets. A prior POS schema existed with bill-level detail including cost price, GST breakdown (5/12/18%), net sales, employee attribution, and payment status. These are real revenue events that currently sit entirely outside the GMV picture and cannot be aggregated with UrbanPiper sales.</div>
+        <div class="src-pain">No canonical schema enforced. Cannot roll into total revenue. COGS data exists but unused.</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<div class="pf"><div class="pf-brand">KYTCHENS</div><div class="pf-pg">2 of 9</div></div>
+</div>
+
+<!-- PAGE 3 — INGESTION DETAIL -->
+<div class="page">
+<div class="ph">
+  <div class="ph-bar">Ingestion Detail</div>
+  <div class="ph-body">
+    <div class="ph-title">How Each Source Actually Arrives</div>
+    <div class="ph-sub">Exact file schemas from the actual raw files. This is what the ingestion pipeline must parse and store in Layer 0.</div>
+
+    <div class="ingest-box">
+      <div class="ingest-head"><div class="ingest-name">📸 Bravery Photo Capture CSV — alt-day bulk download</div><div class="ingest-how">CSV File · Every 2 days</div></div>
+      <div class="ingest-body">
+        <div class="ingest-col">
+          <div class="ingest-label">Order Identity</div>
+          <div class="ingest-item"><code>order_id</code> → UP Order ID (INT)</div>
+          <div class="ingest-item"><code>aggregator_order_no</code> → Aggregator Order ID (INT)</div>
+          <div class="ingest-item"><code>kitchen_name</code> → e.g. "Chembur"</div>
+          <div class="ingest-item"><code>brand_name</code> → e.g. "Cookie Cartel - Chembur"</div>
+          <div class="ingest-item"><code>customer_name</code></div>
+          <div class="ingest-item"><code>order_name</code> → item names string</div>
+        </div>
+        <div class="ingest-col">
+          <div class="ingest-label">Photo + Capture</div>
+          <div class="ingest-item"><code>order_image_name</code> → filename on Bravery server</div>
+          <div class="ingest-item"><code>created_on</code> → order creation timestamp</div>
+          <div class="ingest-item"><code>order_captured_time</code> → photo capture timestamp</div>
+          <div class="ingest-item"><code>is_order_image_captured</code> → 1 / 0 flag</div>
+          <div class="ingest-item"><code>item_count</code> → number of distinct items</div>
+          <div class="ingest-item"><code>order_quantity</code> → total quantity</div>
+        </div>
+        <div class="ingest-col">
+          <div class="ingest-label">Quality Control</div>
+          <div class="ingest-item"><code>maker</code> → e.g. "ganesh g", "Rupesh K" (free text)</div>
+          <div class="ingest-item"><code>Checker</code> → e.g. "Pawan B", "None - Chembur" (free text)</div>
+          <div class="ingest-item"><code>order_captured_by</code> → supervisor name (free text)</div>
+          <div class="ingest-item" style="color:var(--o2);font-weight:600">⚠ Photo URL must be constructed from image_name before 14-day expiry</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ingest-box">
+      <div class="ingest-head"><div class="ingest-name">💬 Restaverse Complaints CSV — daily email attachment</div><div class="ingest-how">Email CSV · Daily</div></div>
+      <div class="ingest-body">
+        <div class="ingest-col">
+          <div class="ingest-label">Order + Brand Identity</div>
+          <div class="ingest-item"><code>order_id</code> → Aggregator Order ID (NOT UP Order ID)</div>
+          <div class="ingest-item"><code>res_id</code> → quint_id = up_store_ref_id</div>
+          <div class="ingest-item"><code>brand</code> → brand name string</div>
+          <div class="ingest-item"><code>subzone</code> → location / kitchen name</div>
+          <div class="ingest-item"><code>platform</code> → swiggy | zomato</div>
+          <div class="ingest-item"><code>user_name</code> → customer name</div>
+        </div>
+        <div class="ingest-col">
+          <div class="ingest-label">Complaint Detail</div>
+          <div class="ingest-item"><code>reason</code> → raw: SPILLAGE_ISSUES, QUALITY_ISSUES, Wrong item(s)...</div>
+          <div class="ingest-item"><code>comment</code> → customer's free-text complaint</div>
+          <div class="ingest-item"><code>media</code> → S3 URL of customer's photo</div>
+          <div class="ingest-item"><code>complaint_item_names</code> → items complained about</div>
+          <div class="ingest-item"><code>cart_item_names</code> → what was actually ordered</div>
+          <div class="ingest-item"><code>requested_refund_amount</code> → FLOAT64 ✓</div>
+        </div>
+        <div class="ingest-col">
+          <div class="ingest-label">Status + Timing</div>
+          <div class="ingest-item"><code>complain_status</code> → DISMISSED | UNRESOLVED</div>
+          <div class="ingest-item"><code>order_created_at</code> → timestamp string</div>
+          <div class="ingest-item"><code>complaint_created_at</code> → timestamp string</div>
+          <div class="ingest-item" style="color:var(--o2);font-weight:600">⚠ order_id here = Aggregator ID, not UP Order ID — join via order_id_map</div>
+          <div class="ingest-item" style="color:var(--o2);font-weight:600">⚠ res_id = quint_id — use to resolve brand_id + kitchen_id</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ingest-box">
+      <div class="ingest-head"><div class="ingest-name">📦 SupplyNote Inventory CSV — hourly email attachment</div><div class="ingest-how">Email CSV · Hourly</div></div>
+      <div class="ingest-body">
+        <div class="ingest-col">
+          <div class="ingest-label">Item Identity</div>
+          <div class="ingest-item"><code>sku_code</code> → SupplyNote internal SKU code</div>
+          <div class="ingest-item"><code>item_name</code> → raw name (may have #_# prefix)</div>
+          <div class="ingest-item"><code>category</code> → item category</div>
+          <div class="ingest-item"><code>unit</code> → kg | pcs | pkts | ltr</div>
+        </div>
+        <div class="ingest-col">
+          <div class="ingest-label">Stock Levels</div>
+          <div class="ingest-item"><code>current_stock</code> → qty as of email time</div>
+          <div class="ingest-item"><code>par_level</code> → minimum threshold</div>
+          <div class="ingest-item"><code>outlet_name</code> → SupplyNote kitchen alias (≠ canonical name)</div>
+        </div>
+        <div class="ingest-col">
+          <div class="ingest-label">Key Design Decision</div>
+          <div class="ingest-item" style="color:var(--o2);font-weight:600">Store every pull with timestamp — never overwrite. OOS history requires full history.</div>
+          <div class="ingest-item" style="color:var(--o2);font-weight:600">outlet_name resolves to kitchen_id via dim_kitchens.sn_outlet_name alias.</div>
+          <div class="ingest-item" style="color:var(--o2);font-weight:600">Stock in/out movements available via configurable UrbanPiper webhook — more valuable than snapshots alone.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="co co-o" style="margin-top:4px;">
+      <strong>The join keystone:</strong> Bravery CSV has <code>order_id</code> = UP Order ID and <code>aggregator_order_no</code> = Aggregator Order ID. The Complaints CSV has <code>order_id</code> = Aggregator Order ID and <code>res_id</code> = quint_id. The <strong>order_id_map</strong> table is the only place these two IDs are stored together — every complaint ↔ evidence ↔ order join flows through it.
+    </div>
+  </div>
+</div>
+<div class="pf"><div class="pf-brand">KYTCHENS</div><div class="pf-pg">3 of 9</div></div>
+</div>
+
+<!-- PAGE 4 — DATA FLOW -->
+<div class="page">
+<div class="ph">
+  <div class="ph-bar">Data Flow</div>
+  <div class="ph-body">
+    <div class="ph-title">Current Flow → Target Flow</div>
+    <div class="ph-sub">Each row = one source. Current state shows the broken and manual paths. Target shows the automated pipeline into Supabase alongside ClickHouse.</div>
+
+    <div class="flow-sep">Current State</div>
+    <div class="flow">
+      <div class="flow-row"><div class="fl">Orders</div><div class="fn fn-src">UrbanPiper<div class="fn-sub">webhook</div></div><div class="fa"><div class="lbl">live</div></div><div class="fn fn-raw">BraveryKOA<div class="fn-sub">raw buffer</div></div><div class="fa"><div class="lbl">ingest</div></div><div class="fn fn-stg">MySQL AWS</div><div class="fa"><div class="lbl">ETL (types lost)</div></div><div class="fn fn-mart">ClickHouse<div class="fn-sub">String types ⚠</div></div><div class="fa"><div class="lbl">aggregates to</div></div><div class="fn fn-kpi">aggregated_data<div class="fn-sub">Decimal ✓</div></div></div>
+      <div class="flow-row"><div class="fl">Inventory</div><div class="fn fn-src">SupplyNote<div class="fn-sub">hourly email</div></div><div class="fa dash"><div class="lbl">manual DL</div></div><div class="fn fn-sht">Google Sheet<div class="fn-sub">per brand</div></div><div class="fa red"><div class="lbl">nowhere</div></div><div class="fn fn-dead">❌ Overwritten</div></div>
+      <div class="flow-row"><div class="fl">Evidence</div><div class="fn fn-src">Bravery CSV<div class="fn-sub">alt-day</div></div><div class="fa red"><div class="lbl">no pipeline</div></div><div class="fn fn-dead">❌ No DB<div class="fn-sub">maker/checker lost</div></div></div>
+      <div class="flow-row"><div class="fl">Complaints</div><div class="fn fn-src">Restaverse<div class="fn-sub">daily email CSV</div></div><div class="fa dash"><div class="lbl">manual process</div></div><div class="fn fn-sht">Manual cleanup<div class="fn-sub">stale output</div></div><div class="fa red"><div class="lbl">nowhere</div></div><div class="fn fn-dead">❌ Stale</div></div>
+      <div class="flow-row"><div class="fl">Financials</div><div class="fn fn-src">Brand Map<div class="fn-sub">Google Sheet</div></div><div class="fa red"><div class="lbl">manual lookup</div></div><div class="fn fn-dead">❌ Text fields<div class="fn-sub">₹ · % as String</div></div></div>
+      <div class="flow-row"><div class="fl">POS Sales</div><div class="fn fn-src">Sheets<div class="fn-sub">varied formats</div></div><div class="fa red"><div class="lbl">no schema</div></div><div class="fn fn-dead">❌ Outside GMV</div></div>
+      <div class="flow-row"><div class="fl">Stock Events</div><div class="fn fn-src">UrbanPiper<div class="fn-sub">webhook (config)</div></div><div class="fa red"><div class="lbl">not configured</div></div><div class="fn fn-dead">❌ Not enabled</div></div>
+    </div>
+
+    <div class="flow-sep" style="margin-top:16px">Target State</div>
+    <div class="flow">
+      <div class="flow-row"><div class="fl">Orders</div><div class="fn fn-src">ClickHouse<div class="fn-sub">existing</div></div><div class="fa"><div class="lbl">CDC sync</div></div><div class="fn fn-raw">raw_orders<div class="fn-sub">L0</div></div><div class="fa"><div class="lbl">cast types</div></div><div class="fn fn-stg">stg_orders<div class="fn-sub">L1 · Numeric</div></div><div class="fa"><div class="lbl">UUID FKs</div></div><div class="fn fn-mart">fact_orders<div class="fn-sub">L2</div></div><div class="fa"><div class="lbl">15-min agg</div></div><div class="fn fn-kpi">daily_perf<div class="fn-sub">L3</div></div><div class="fa"><div class="lbl">flatten</div></div><div class="fn fn-sem">v_orders<div class="fn-sub">L4 · AI</div></div></div>
+      <div class="flow-row"><div class="fl">Inventory</div><div class="fn fn-src">Email CSV<div class="fn-sub">hourly</div></div><div class="fa"><div class="lbl">Edge Fn</div></div><div class="fn fn-raw">raw_inventory<div class="fn-sub">L0 · timestamped</div></div><div class="fa"><div class="lbl">resolve outlet</div></div><div class="fn fn-mart">fact_stock_snapshot<div class="fn-sub">L2 · history kept</div></div><div class="fa"><div class="lbl">aggregate</div></div><div class="fn fn-kpi">daily_stock<div class="fn-sub">L3</div></div></div>
+      <div class="flow-row"><div class="fl">Evidence</div><div class="fn fn-src">Bravery CSV<div class="fn-sub">alt-day</div></div><div class="fa"><div class="lbl">import job</div></div><div class="fn fn-raw">raw_photo_captures<div class="fn-sub">L0</div></div><div class="fa"><div class="lbl">resolve Keka</div></div><div class="fn fn-mart">fact_order_evidence<div class="fn-sub">L2</div></div></div>
+      <div class="flow-row"><div class="fl">Complaints</div><div class="fn fn-src">Email CSV<div class="fn-sub">daily</div></div><div class="fa"><div class="lbl">Edge Fn</div></div><div class="fn fn-raw">raw_complaints<div class="fn-sub">L0</div></div><div class="fa"><div class="lbl">join order_id_map</div></div><div class="fn fn-mart">fact_order_evidence<div class="fn-sub">L2 · merged row</div></div><div class="fa"><div class="lbl">aggregate</div></div><div class="fn fn-kpi">daily_evidence<div class="fn-sub">L3</div></div></div>
+      <div class="flow-row"><div class="fl">Financials</div><div class="fn fn-src">Brand Map<div class="fn-sub">one-time</div></div><div class="fa"><div class="lbl">typed import</div></div><div class="fn fn-mart">dim_brand_kitchen<div class="fn-sub">L2 · Numeric</div></div><div class="fa"><div class="lbl">calc engine</div></div><div class="fn fn-kpi">monthly_settlement<div class="fn-sub">L3 → Tally</div></div></div>
+      <div class="flow-row"><div class="fl">POS Sales</div><div class="fn fn-src">Sheets<div class="fn-sub">canonical form</div></div><div class="fa"><div class="lbl">validate</div></div><div class="fn fn-raw">raw_pos_sales<div class="fn-sub">L0</div></div><div class="fa"><div class="lbl">standardise</div></div><div class="fn fn-mart">fact_pos_sales<div class="fn-sub">L2 · with COGS</div></div><div class="fa"><div class="lbl">merge</div></div><div class="fn fn-kpi">total_revenue<div class="fn-sub">online + offline</div></div></div>
+      <div class="flow-row"><div class="fl">Stock Events</div><div class="fn fn-src">UrbanPiper<div class="fn-sub">webhook</div></div><div class="fa"><div class="lbl">configure webhook</div></div><div class="fn fn-raw">raw_stock_events<div class="fn-sub">L0</div></div><div class="fa"><div class="lbl">resolve item</div></div><div class="fn fn-mart">fact_stock_events<div class="fn-sub">L2 · in/out ledger</div></div></div>
+    </div>
+
+    <div class="co co-o" style="margin-top:12px;font-size:10px;">
+      <strong>Evidence + Complaints merge into one row:</strong> Bravery CSV (photo, maker, checker) arrives with UP Order ID. Complaints CSV (reason, refund, status) arrives with Aggregator Order ID. Both are resolved via <strong>order_id_map</strong> and merged into a single <strong>fact_order_evidence</strong> row — so one query shows the photo, who made it, who checked it, and whether it was complained about.
+    </div>
+  </div>
+</div>
+<div class="pf"><div class="pf-brand">KYTCHENS</div><div class="pf-pg">4 of 9</div></div>
+</div>
+
+<!-- PAGE 5 — 5-LAYER ARCHITECTURE -->
+<div class="page">
+<div class="ph">
+  <div class="ph-bar">Pipeline Layers</div>
+  <div class="ph-body">
+    <div class="ph-title">The 5-Layer Pipeline</div>
+    <div class="ph-sub">Each layer has exactly one job. The existing ClickHouse aggregated_data already maps to Layer 3. The new Supabase schema handles Layers 0–2 and 4.</div>
+
+    <div class="layers">
+      <div class="layer l0">
+        <div class="l-num">0</div>
+        <div class="l-meta"><div class="l-name">Raw</div><div class="l-schema">kytchens_raw</div></div>
+        <div class="l-body">
+          <div class="l-chips"><span class="l-chip">raw_orders</span><span class="l-chip">raw_order_statuses</span><span class="l-chip">raw_items</span><span class="l-chip">raw_inventory_snapshot</span><span class="l-chip">raw_photo_captures</span><span class="l-chip">raw_complaints</span><span class="l-chip">raw_pos_sales</span><span class="l-chip">raw_stock_events</span></div>
+          <div class="l-desc">Exact replica of every source file as it arrived — JSONB payload + key indexed columns (ingested_at, source_system, source_file_ref). <strong>Append-only forever. Never updated, never deleted.</strong> Every pipeline failure is recoverable from here. The UrbanPiper type regression would have been a 5-minute fix if this layer had existed.</div>
+        </div>
+        <div class="l-right"><div class="l-cad">On ingest</div><div class="l-clbl">trigger</div></div>
+      </div>
+
+      <div class="layer l1">
+        <div class="l-num">1</div>
+        <div class="l-meta"><div class="l-name">Staging</div><div class="l-schema">kytchens_staging</div></div>
+        <div class="l-body">
+          <div class="l-chips"><span class="l-chip">stg_orders</span><span class="l-chip">stg_items</span><span class="l-chip">stg_order_statuses</span><span class="l-chip">stg_inventory</span><span class="l-chip">stg_photo_captures</span><span class="l-chip">stg_complaints</span><span class="l-chip">stg_pos_sales</span><span class="l-chip">stg_unresolved</span></div>
+          <div class="l-desc"><strong>Type correction happens here — nowhere else.</strong> Financial strings → NUMERIC. Date strings → TIMESTAMPTZ IST. quint_id / res_id / Store_ID resolved to brand_id + kitchen_id UUID. Maker/checker/order_captured_by names resolved to keka_employee_id. Complaint reason strings canonicalised (SPILLAGE_ISSUES → Packaging/Spillage). Rows that fail resolution go to stg_unresolved — never silently dropped.</div>
+        </div>
+        <div class="l-right"><div class="l-cad">Derived</div><div class="l-clbl">from Raw</div></div>
+      </div>
+
+      <div class="layer l2">
+        <div class="l-num">2</div>
+        <div class="l-meta"><div class="l-name">Mart</div><div class="l-schema">kytchens_mart</div></div>
+        <div class="l-body">
+          <div class="l-chips"><span class="l-chip">order_id_map</span><span class="l-chip">dim_brands</span><span class="l-chip">dim_kitchens</span><span class="l-chip">dim_brand_kitchen</span><span class="l-chip">dim_skus</span><span class="l-chip">dim_employees</span><span class="l-chip">fact_orders</span><span class="l-chip">fact_items</span><span class="l-chip">fact_order_statuses</span><span class="l-chip">fact_order_evidence</span><span class="l-chip">fact_stock_snapshot</span><span class="l-chip">fact_stock_events</span><span class="l-chip">fact_pos_sales</span></div>
+          <div class="l-desc">Star schema. Dimensions at centre, facts joining via UUID FKs. <strong>Every fact row carries brand_id + kitchen_id — no orphan rows.</strong> fact_order_evidence is the unified table where Bravery photo data and Restaverse complaint data merge into one row per order via order_id_map. dim_brand_kitchen replaces the Brand Map sheet with typed, UUID-keyed commercial config.</div>
+        </div>
+        <div class="l-right"><div class="l-cad">Hourly</div><div class="l-clbl">batch</div></div>
+      </div>
+
+      <div class="layer l3">
+        <div class="l-num">3</div>
+        <div class="l-meta"><div class="l-name">Analytics</div><div class="l-schema">kytchens_analytics</div></div>
+        <div class="l-body">
+          <div class="l-chips"><span class="l-chip">daily_brand_performance</span><span class="l-chip">monthly_settlement</span><span class="l-chip">daily_stock_health</span><span class="l-chip">daily_evidence_summary</span><span class="l-chip">total_revenue_daily</span></div>
+          <div class="l-desc">Pre-aggregated KPIs. One row per (brand × kitchen × date). <strong>Dashboards read only from here — zero joins at query time.</strong> aggregated_data in ClickHouse is conceptually this layer and already has correct Decimal types — it becomes the orders portion. Inventory, evidence, finance, and POS add the remaining KPI domains. Refreshed every 15 minutes.</div>
+        </div>
+        <div class="l-right"><div class="l-cad">15 min</div><div class="l-clbl">near real-time</div></div>
+      </div>
+
+      <div class="layer l4">
+        <div class="l-num">4</div>
+        <div class="l-meta"><div class="l-name">Semantic</div><div class="l-schema">kytchens_semantic</div></div>
+        <div class="l-body">
+          <div class="l-chips"><span class="l-chip">v_orders</span><span class="l-chip">v_evidence_complaints</span><span class="l-chip">v_brand_performance</span><span class="l-chip">v_stock</span><span class="l-chip">v_financials</span><span class="l-chip">v_revenue</span><span class="l-chip">data_dictionary</span></div>
+          <div class="l-desc">AI-readable flat views. Column names are full English phrases: <em>kitchen_prep_time_minutes</em>, <em>gross_merchandise_value_inr</em>, <em>is_kitchen_fault</em>. Pre-joined — no joins at query time. <strong>Read-only. The only layer the Kitchen Intelligence AI agent ever touches.</strong> data_dictionary is a queryable table of column descriptions the agent reads before generating SQL.</div>
+        </div>
+        <div class="l-right"><div class="l-cad">Mat. view</div><div class="l-clbl">15 min</div></div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="leg-i"><div class="leg-dot" style="background:#9E3209"></div>Layer 0 — Raw, append-only buffer</div>
+      <div class="leg-i"><div class="leg-dot" style="background:var(--o1)"></div>Layer 1 — Type correction &amp; canonicalisation</div>
+      <div class="leg-i"><div class="leg-dot" style="background:#117A65"></div>Layer 2 — Star schema, UUID FKs</div>
+      <div class="leg-i"><div class="leg-dot" style="background:#1A5276"></div>Layer 3 — Pre-aggregated KPIs (15-min refresh)</div>
+      <div class="leg-i"><div class="leg-dot" style="background:var(--purple)"></div>Layer 4 — AI-readable semantic views</div>
+    </div>
+  </div>
+</div>
+<div class="pf"><div class="pf-brand">KYTCHENS</div><div class="pf-pg">5 of 9</div></div>
+</div>
+
+<!-- PAGE 6 — SIX MODULES -->
+<div class="page">
+<div class="ph">
+  <div class="ph-bar">Business Modules</div>
+  <div class="ph-body">
+    <div class="ph-title">Six Business Modules</div>
+    <div class="ph-sub">Each module is self-contained but all connect through the order ID chain and brand/kitchen UUID FKs.</div>
+
+    <div class="mod-grid">
+      <div class="mod m-o">
+        <div class="mod-h"><div class="mod-ico">🛒</div><div class="mod-nm">Orders &amp; Sales</div><div class="mod-sb">UrbanPiper · ClickHouse</div></div>
+        <div class="mod-b">
+          <div class="mod-item">fact_orders <span class="mod-key">up_order_id PK</span></div>
+          <div class="mod-item">fact_items <span class="mod-key">→ up_order_id</span></div>
+          <div class="mod-item">fact_order_statuses <span class="mod-key">→ up_order_id</span></div>
+          <div class="mod-item">order_id_map <span class="mod-key">up ↔ aggregator</span></div>
+          <div class="mod-item" style="font-size:9px;color:var(--ink3);margin-top:4px;">KPT = mfr_time − ack_time · GMV = subtotal + packaging · NMV = GMV − discount</div>
+        </div>
+      </div>
+
+      <div class="mod m-t">
+        <div class="mod-h"><div class="mod-ico">📦</div><div class="mod-nm">Inventory &amp; Stock</div><div class="mod-sb">SupplyNote hourly email · UP webhook</div></div>
+        <div class="mod-b">
+          <div class="mod-item">fact_stock_snapshot <span class="mod-key">snapshot_at + sku_id</span></div>
+          <div class="mod-item">fact_stock_events <span class="mod-key">in | out · UP webhook</span></div>
+          <div class="mod-item">dim_skus <span class="mod-key">sku_id (UUID)</span></div>
+          <div class="mod-item" style="font-size:9px;color:var(--ink3);margin-top:4px;">Snapshot = what's there now · Events = why it changed. Both needed. OOS = stock ≤ par level.</div>
+        </div>
+      </div>
+
+      <div class="mod m-b">
+        <div class="mod-h"><div class="mod-ico">📸</div><div class="mod-nm">Evidence &amp; Quality</div><div class="mod-sb">Bravery CSV · Restaverse email · Keka</div></div>
+        <div class="mod-b">
+          <div class="mod-item">fact_order_evidence <span class="mod-key">→ up_order_id</span></div>
+          <div class="mod-item">photo_url + photo_expires_at</div>
+          <div class="mod-item">maker_employee_id <span class="mod-key">→ dim_employees</span></div>
+          <div class="mod-item">checker_employee_id <span class="mod-key">→ dim_employees</span></div>
+          <div class="mod-item">supervisor_employee_id <span class="mod-key">→ dim_employees</span></div>
+          <div class="mod-item">complaint cols from Restaverse <span class="mod-key">via order_id_map</span></div>
+        </div>
+      </div>
+
+      <div class="mod m-p">
+        <div class="mod-h"><div class="mod-ico">💰</div><div class="mod-nm">Commercials &amp; Finance</div><div class="mod-sub">Brand Map · Tally</div></div>
+        <div class="mod-b">
+          <div class="mod-item">dim_brand_kitchen <span class="mod-key">brand_id + kitchen_id</span></div>
+          <div class="mod-item">— mg_rental_inr (NUMERIC, not text)</div>
+          <div class="mod-item">— rev_share_pct_tier1, tier2</div>
+          <div class="mod-item">— rev_share_threshold_inr</div>
+          <div class="mod-item">— go_live_date</div>
+          <div class="mod-item">monthly_settlement → Tally invoice</div>
+        </div>
+      </div>
+
+      <div class="mod m-a">
+        <div class="mod-h"><div class="mod-ico">👥</div><div class="mod-nm">People &amp; Identity</div><div class="mod-sb">Keka HRMS · one-way sync</div></div>
+        <div class="mod-b">
+          <div class="mod-item">dim_employees <span class="mod-key">keka_employee_id PK</span></div>
+          <div class="mod-item">— full_name (for Bravery name matching)</div>
+          <div class="mod-item">— designation, kitchen_id, is_active</div>
+          <div class="mod-item" style="font-size:9px;color:var(--ink3);margin-top:4px;">Maker "ganesh g", checker "Pawan B", supervisor "Chembur Supervisor" all resolve to keka_employee_id at Layer 1. Raw name kept as fallback.</div>
+        </div>
+      </div>
+
+      <div class="mod m-g">
+        <div class="mod-h"><div class="mod-ico">✍️</div><div class="mod-nm">POS &amp; Manual Sales</div><div class="mod-sub">POS · Event · Rental</div></div>
+        <div class="mod-b">
+          <div class="mod-item">fact_pos_sales <span class="mod-key">bill_number PK</span></div>
+          <div class="mod-item">— bill_total_inr, net_sales_inr</div>
+          <div class="mod-item">— bill_cost_price_inr (COGS)</div>
+          <div class="mod-item">— gst_5_inr, gst_12_inr, gst_18_inr</div>
+          <div class="mod-item">— employee_id <span class="mod-key">→ dim_employees</span></div>
+          <div class="mod-item">Rolls into total_revenue alongside UrbanPiper GMV</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="co co-o" style="margin-top:14px">
+      <strong>The ID chain that connects everything:</strong> &nbsp;
+      <code style="font-family:'Courier New',monospace;font-size:10px;color:var(--o2)">up_order_id</code> (Bravery, ClickHouse orders) ↔
+      <code style="font-family:'Courier New',monospace;font-size:10px;color:var(--o2)">aggregator_order_id</code> (Restaverse complaints) via
+      <code style="font-family:'Courier New',monospace;font-size:10px;color:var(--blue)">order_id_map</code> &nbsp;·&nbsp;
+      <code style="font-family:'Courier New',monospace;font-size:10px;color:var(--o2)">res_id = quint_id = up_store_ref_id</code> → resolves to brand_id + kitchen_id &nbsp;·&nbsp;
+      <code style="font-family:'Courier New',monospace;font-size:10px;color:var(--o2)">item_ref_id</code> links items ↔ stock events ↔ dim_skus
+    </div>
+  </div>
+</div>
+<div class="pf"><div class="pf-brand">KYTCHENS</div><div class="pf-pg">6 of 9</div></div>
+</div>
+
+<!-- PAGE 7 — TABLE DEFS: ORDERS -->
+<div class="page">
+<div class="ph">
+  <div class="ph-bar">Tables · Orders</div>
+  <div class="ph-body">
+    <div class="ph-title">Orders Module — Table Definitions</div>
+    <div class="ph-sub"><span class="tn tn-ex">exists</span> column in ClickHouse today &nbsp; <span class="tn tn-fix">fix type</span> exists but type is wrong (String → Numeric) &nbsp; <span class="tn tn-new">new</span> needs to be added &nbsp; <span class="tn tn-raw">raw field</span> column name from actual source file</div>
+
+    <div class="tg2" style="margin-top:10px">
+      <div class="tc">
+        <div class="tc-head ho"><div class="tc-name">order_id_map</div><div class="tc-grain">1 row per order · the glue table · build first</div></div>
+        <div class="tr hdr"><span class="cn" style="color:var(--ink3)">Column</span><span class="ct" style="color:var(--ink3)">Type</span><span class="cd" style="color:var(--ink3)">Source / Notes</span></div>
+        <div class="tr"><span class="cn pk">map_id</span><span class="ct">UUID PK</span><span class="cd">gen_random_uuid()</span></div>
+        <div class="tr"><span class="cn">up_order_id</span><span class="ct">TEXT UNIQUE</span><span class="cd">= Bravery <code>order_id</code> = CH Order_ID <span class="tn tn-raw">raw field</span></span></div>
+        <div class="tr"><span class="cn">aggregator_order_id</span><span class="ct">TEXT UNIQUE</span><span class="cd">= Bravery <code>aggregator_order_no</code> = Complaints <code>order_id</code> <span class="tn tn-raw">raw field</span></span></div>
+        <div class="tr"><span class="cn">channel</span><span class="ct">TEXT</span><span class="cd">swiggy | zomato | direct <span class="tn tn-ex">exists</span></span></div>
+        <div class="tr"><span class="cn fk">brand_id</span><span class="ct">UUID FK</span><span class="cd">→ dim_brands <span class="tn tn-new">new</span></span></div>
+        <div class="tr"><span class="cn fk">kitchen_id</span><span class="ct">UUID FK</span><span class="cd">→ dim_kitchens <span class="tn tn-new">new</span></span></div>
+        <div class="tr"><span class="cn">up_store_ref_id</span><span class="ct">TEXT</span><span class="cd">= Store_ID = quint_id = Complaints res_id <span class="tn tn-ex">exists</span></span></div>
+        <div class="tr"><span class="cn">order_date_ist</span><span class="ct">DATE</span><span class="cd">IST · derived from Date_Time <span class="tn tn-fix">fix type</span></span></div>
+        <div class="tr"><span class="cn">created_at</span><span class="ct">TIMESTAMPTZ</span><span class="cd">DEFAULT now()</span></div>
+      </div>
+
+      <div class="tc">
+        <div class="tc-head ho"><div class="tc-name">fact_orders</div><div class="tc-grain">1 row per order · from transformed_sales_new</div></div>
+        <div class="tr hdr"><span class="cn" style="color:var(--ink3)">Column</span><span class="ct" style="color:var(--ink3)">Type</span><span class="cd" style="color:var(--ink3)">Source / Notes</span></div>
+        <div class="tr"><span class="cn pk">order_sk</span><span class="ct">BIGSERIAL PK</span><span class="cd">Surrogate key</span></div>
+        <div class="tr"><span class="cn">up_order_id</span><span class="ct">TEXT UNIQUE</span><span class="cd">= Order_ID <span class="tn tn-ex">exists</span></span></div>
+        <div class="tr"><span class="cn">aggregator_order_id</span><span class="ct">TEXT</span><span class="cd">= Aggregator_Order_ID <span class="tn tn-ex">exists</span></span></div>
+        <div class="tr"><span class="cn fk">brand_id</span><span class="ct">UUID FK</span><span class="cd">→ dim_brands · via up_store_ref_id <span class="tn tn-new">new</span></span></div>
+        <div class="tr"><span class="cn fk">kitchen_id</span><span class="ct">UUID FK</span><span class="cd">→ dim_kitchens <span class="tn tn-new">new</span></span></div>
+        <div class="tr"><span class="cn">channel</span><span class="ct">TEXT</span><span class="cd">= Source · swiggy | zomato | direct <span class="tn tn-ex">exists</span></span></div>
+        <div class="tr"><span class="cn">order_status</span><span class="ct">TEXT</span><span class="cd">= Final_Order_Status <span class="tn tn-ex">exists</span></span></div>
+        <div class="tr"><span class="cn">order_datetime_ist</span><span class="ct">TIMESTAMPTZ</span><span class="cd">= Date_Time · String in CH → TIMESTAMPTZ <span class="tn tn-fix">fix type</span></span></div>
+        <div class="tr"><span class="cn">subtotal_inr</span><span class="ct">NUMERIC(12,2)</span><span class="cd">= Sub_Total_Amount · String in CH <span class="tn tn-fix">fix type</span></span></div>
+        <div class="tr"><span class="cn">packaging_charges_inr</span><span class="ct">NUMERIC(12,2)</span><span class="cd">= Service_Or_Packaging_Charges <span class="tn tn-fix">fix type</span></span></div>
+        <div class="tr"><span class="cn gen">gmv_inr</span><span class="ct">NUMERIC(12,2) GEN</span><span class="cd">subtotal + packaging <span class="tn tn-new">new</span></span></div>
+        <div class="tr"><span class="cn">merchant_discount_inr</span><span class="ct">NUMERIC(12,2)</span><span class="cd">= Merchant_Discount <span class="tn tn-fix">fix type</span></span></div>
+        <div class="tr"><span class="cn">aggregator_discount_inr</span><span class="ct">NUMERIC(12,2)</span><span class="cd">= Aggregator_Discount <span class="tn tn-fix">fix type</span></span></div>
+        <div class="tr"><span class="cn gen">nmv_inr</span><span class="ct">NUMERIC(12,2) GEN</span><span class="cd">gmv − merchant_discount <span class="tn tn-new">new</span></span></div>
+        <div class="tr"><span class="cn">transferred_amount_inr</span><span class="ct">NUMERIC(12,2)</span><span class="cd">= Transferred_Amount <span class="tn tn-fix">fix type</span></span></div>
+        <div class="tr"><span class="cn">total_taxes_inr</span><span class="ct">NUMERIC(12,2)</span><span class="cd">= Total_Taxes <span class="tn tn-fix">fix type</span></span></div>
+        <div class="tr"><span class="cn gen">kpt_minutes</span><span class="ct">NUMERIC(6,2) GEN</span><span class="cd">Joined from statuses · mfr − ack in mins <span class="tn tn-new">new</span></span></div>
+        <div class="tr"><span class="cn">cancellation_reason</span><span class="ct">TEXT</span><span class="cd">= Cancellation_Reason <span class="tn tn-ex">exists</span></span></div>
+        <div class="tr"><span class="cn">city</span><span class="ct">TEXT</span><span class="cd">= City <span class="tn tn-ex">exists</span></span></div>
+        <div class="tr"><span class="cn">customer_id_hash</span><span class="ct">TEXT</span><span class="cd">Hashed Customer_ID <span class="tn tn-ex">exists</span></span></div>
+      </div>
+    </div>
+
+    <div class="gap"></div>
+    <div class="tg2">
+      <div class="tc">
+        <div class="tc-head ho"><div class="tc-name">fact_items</div><div class="tc-grain">1 row per item per order · from transformed_itemised_sales</div></div>
+        <div class="tr"><span class="cn pk">item_sk</span><span class="ct">BIGSERIAL PK</span><span class="cd">Surrogate key</span></div>
+        <div class="tr"><span class="cn fk">order_sk</span><span class="ct">BIGINT FK</span><span class="cd">→ fact_orders</span></div>
+        <div class="tr"><span class="cn">up_order_id</span><span class="ct">TEXT</span><span class="cd">= Order_ID <span class="tn tn-ex">exists</span></span></div>
+        <div class="tr"><span class="cn">aggregator_order_id</span><span class="ct">TEXT</span><span class="cd">= Aggregator_Order_ID <span class="tn tn-ex">exists</span></span></div>
+        <div class="tr"><span class="cn fk">sku_id</span><span class="ct">UUID FK</span><span class="cd">→ dim_skus · resolved from item_id <span class="tn tn-new">new</span></span></div>
+        <div class="tr"><span class="cn">item_id</span><span class="ct">TEXT</span><span class="cd">= Item_ID · UrbanPiper item ref <span class="tn tn-ex">exists</span></span></div>
+        <div class="tr"><span class="cn">item_ref_id</span><span class="ct">TEXT</span><span class="cd">= Item_Ref_ID · aggregator + stock events ref <span class="tn tn-ex">exists</span></span></div>
+        <div class="tr"><span class="cn">item_name</span><span class="ct">TEXT</span><span class="cd">= Item_Name <span class="tn tn-ex">exists</span></span></div>
+        <div class="tr"><span class="cn">category</span><span class="ct">TEXT</span><span class="cd">= Category <span class="tn tn-ex">exists</span></span></div>
+        <div class="tr"><span class="cn">quantity</span><span class="ct">NUMERIC(8,2)</span><span class="cd">= Quantity · String in CH <span class="tn tn-fix">fix type</span></span></div>
+        <div class="tr"><span class="cn">unit_price_inr</span><span class="ct">NUMERIC(10,2)</span><span class="cd">= Unit_Price <span class="tn tn-fix">fix type</span></span></div>
+        <div class="tr"><span class="cn">item_total_inr</span><span class="ct">NUMERIC(10,2)</span><span class="cd">= Item_Total <span class="tn tn-fix">fix type</span></span></div>
+        <div class="tr"><span class="cn">item_discount_inr</span><span class="ct">NUMERIC(10,2)</span><span class="cd">= Discount <span class="tn tn-fix">fix type</span></span></div>
+        <div class="tr"><span class="cn">item_tax_rate</span><span class="ct">NUMERIC(6,4)</span><span class="cd">= item_tax_rate <span class="tn tn-fix">fix type</span></span></div>
+        <div class="tr"><span class="cn">options</span><span class="ct">TEXT</span><span class="cd">= Options · customisations <span class="tn tn-ex">exists</span></span></div>
+      </div>
+
+      <div class="tc">
+        <div class="tc-head ho"><div class="tc-name">fact_order_statuses</div><div class="tc-grain">1 row per state transition · from prime_order_statuses</div></div>
+        <div class="tr"><span class="cn pk">status_sk</span><span class="ct">BIGSERIAL PK</span><span class="cd">Surrogate key</span></div>
+        <div class="tr"><span class="cn fk">order_sk</span><span class="ct">BIGINT FK</span><span class="cd">→ fact_orders</span></div>
+        <div class="tr"><span class="cn">up_order_id</span><span class="ct">TEXT</span><span class="cd">= order_id <span class="tn tn-ex">exists</span></span></div>
+        <div class="tr"><span class="cn">state</span><span class="ct">TEXT</span><span class="cd">Acknowledged | MFR | Dispatched | Cancelled… <span class="tn tn-ex">exists</span></span></div>
+        <div class="tr"><span class="cn">prev_state</span><span class="ct">TEXT</span><span class="cd">= prev_state (nullable) <span class="tn tn-ex">exists</span></span></div>
+        <div class="tr"><span class="cn">state_at</span><span class="ct">TIMESTAMPTZ</span><span class="cd">= time · String in CH → TIMESTAMPTZ <span class="tn tn-fix">fix type</span></span></div>
+        <div class="tr"><span class="cn gen">kpt_minutes</span><span class="ct">NUMERIC(6,2) GEN</span><span class="cd">Only on MFR row: mfr − ack time in mins <span class="tn tn-new">new</span></span></div>
+        <div class="tr"><span class="cn">message</span><span class="ct">TEXT</span><span class="cd">= message (nullable) <span class="tn tn-ex">exists</span></span></div>
+        <div class="tr"><span class="cn">created_at</span><span class="ct">TIMESTAMPTZ</span><span class="cd">DEFAULT now()</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="pf"><div class="pf-brand">KYTCHENS</div><div class="pf-pg">7 of 9</div></div>
+</div>
+
+<!-- PAGE 8 — TABLE DEFS: EVIDENCE + INVENTORY + DIMENSIONS -->
+<div class="page">
+<div class="ph">
+  <div class="ph-bar">Tables · Evidence + Inventory + Dimensions</div>
+  <div class="ph-body">
+    <div class="ph-title">Evidence, Inventory &amp; Dimensions — Table Definitions</div>
+    <div class="ph-sub">Column names in <span style="color:var(--purple);font-weight:600">purple</span> = exact field name from the raw source file.</div>
+
+    <div class="tg2" style="margin-bottom:13px">
+      <div class="tc">
+        <div class="tc-head hb"><div class="tc-name">fact_order_evidence</div><div class="tc-grain">1 row per order · Bravery CSV + Restaverse CSV merged via order_id_map</div></div>
+        <div class="tr hdr"><span class="cn" style="color:var(--ink3)">Column</span><span class="ct" style="color:var(--ink3)">Type</span><span class="cd" style="color:var(--ink3)">Source</span></div>
+        <div class="tr"><span class="cn pk">evidence_id</span><span class="ct">UUID PK</span><span class="cd">gen_random_uuid()</span></div>
+        <div class="tr"><span class="cn">up_order_id</span><span class="ct">TEXT UNIQUE</span><span class="cd">= Bravery <code>order_id</code> <span class="tn tn-raw">raw field</span></span></div>
+        <div class="tr"><span class="cn">aggregator_order_id</span><span class="ct">TEXT</span><span class="cd">= Bravery <code>aggregator_order_no</code> = Complaints <code>order_id</code> <span class="tn tn-raw">raw field</span></span></div>
+        <div class="tr"><span class="cn fk">brand_id</span><span class="ct">UUID FK</span><span class="cd">→ dim_brands · via order_id_map</span></div>
+        <div class="tr"><span class="cn fk">kitchen_id</span><span class="ct">UUID FK</span><span class="cd">→ dim_kitchens · via order_id_map</span></div>
+        <div class="tr"><span class="cn">photo_filename</span><span class="ct">TEXT</span><span class="cd">= Bravery <code>order_image_name</code> <span class="tn tn-raw">raw field</span></span></div>
+        <div class="tr"><span class="cn gen">photo_url</span><span class="ct">TEXT GEN</span><span class="cd">Constructed from filename + Bravery base URL</span></div>
+        <div class="tr"><span class="cn">photo_captured_at</span><span class="ct">TIMESTAMPTZ</span><span class="cd">= Bravery <code>order_captured_time</code> <span class="tn tn-raw">raw field</span></span></div>
+        <div class="tr"><span class="cn gen">photo_expires_at</span><span class="ct">TIMESTAMPTZ GEN</span><span class="cd">photo_captured_at + 14 days · alert before this</span></div>
+        <div class="tr"><span class="cn">is_photo_captured</span><span class="ct">BOOL</span><span class="cd">= Bravery <code>is_order_image_captured</code> (1/0) <span class="tn tn-raw">raw field</span></span></div>
+        <div class="tr"><span class="cn fk">maker_employee_id</span><span class="ct">TEXT FK</span><span class="cd">→ dim_employees · resolved from <code>maker</code></span></div>
+        <div class="tr"><span class="cn">maker_name_raw</span><span class="ct">TEXT</span><span class="cd">= Bravery <code>maker</code> · e.g. "ganesh g" <span class="tn tn-raw">raw field</span></span></div>
+        <div class="tr"><span class="cn fk">checker_employee_id</span><span class="ct">TEXT FK</span><span class="cd">→ dim_employees · resolved from <code>Checker</code></span></div>
+        <div class="tr"><span class="cn">checker_name_raw</span><span class="ct">TEXT</span><span class="cd">= Bravery <code>Checker</code> · e.g. "Pawan B" <span class="tn tn-raw">raw field</span></span></div>
+        <div class="tr"><span class="cn fk">supervisor_employee_id</span><span class="ct">TEXT FK</span><span class="cd">→ dim_employees · resolved from <code>order_captured_by</code></span></div>
+        <div class="tr"><span class="cn">order_items_string</span><span class="ct">TEXT</span><span class="cd">= Bravery <code>order_name</code> · item names in order <span class="tn tn-raw">raw field</span></span></div>
+        <div class="tr"><span class="cn">complaint_reason_raw</span><span class="ct">TEXT</span><span class="cd">= Complaints <code>reason</code> · SPILLAGE_ISSUES etc. <span class="tn tn-raw">raw field</span></span></div>
+        <div class="tr"><span class="cn">complaint_reason</span><span class="ct">TEXT</span><span class="cd">Canonicalised: Packaging/Spillage | Quality | Wrong item…</span></div>
+        <div class="tr"><span class="cn">complaint_comment</span><span class="ct">TEXT</span><span class="cd">= Complaints <code>comment</code> · customer free text <span class="tn tn-raw">raw field</span></span></div>
+        <div class="tr"><span class="cn">complaint_media_url</span><span class="ct">TEXT</span><span class="cd">= Complaints <code>media</code> · customer's photo S3 URL <span class="tn tn-raw">raw field</span></span></div>
+        <div class="tr"><span class="cn">complaint_item_names</span><span class="ct">TEXT</span><span class="cd">= Complaints <code>complaint_item_names</code> <span class="tn tn-raw">raw field</span></span></div>
+        <div class="tr"><span class="cn">cart_item_names</span><span class="ct">TEXT</span><span class="cd">= Complaints <code>cart_item_names</code> <span class="tn tn-raw">raw field</span></span></div>
+        <div class="tr"><span class="cn">requested_refund_inr</span><span class="ct">NUMERIC(10,2)</span><span class="cd">= Complaints <code>requested_refund_amount</code> · FLOAT64 ✓ <span class="tn tn-raw">raw field</span></span></div>
+        <div class="tr"><span class="cn">complain_status</span><span class="ct">TEXT</span><span class="cd">= Complaints <code>complain_status</code> · DISMISSED | UNRESOLVED <span class="tn tn-raw">raw field</span></span></div>
+        <div class="tr"><span class="cn">complaint_created_at</span><span class="ct">TIMESTAMPTZ</span><span class="cd">= Complaints <code>complaint_created_at</code> <span class="tn tn-raw">raw field</span></span></div>
+        <div class="tr"><span class="cn">is_kitchen_error</span><span class="ct">BOOL</span><span class="cd">RCA outcome — set by KM review process · null until assessed</span></div>
+        <div class="tr"><span class="cn">created_at</span><span class="ct">TIMESTAMPTZ</span><span class="cd">DEFAULT now()</span></div>
+      </div>
+
+      <div>
+        <div class="tc" style="margin-bottom:13px">
+          <div class="tc-head ht"><div class="tc-name">fact_stock_snapshot</div><div class="tc-grain">1 row per SKU × kitchen × snapshot time · history preserved</div></div>
+          <div class="tr"><span class="cn pk">snapshot_sk</span><span class="ct">BIGSERIAL PK</span><span class="cd">Surrogate key</span></div>
+          <div class="tr"><span class="cn">snapshot_at</span><span class="ct">TIMESTAMPTZ</span><span class="cd">Exact timestamp of email pull — every pull appended</span></div>
+          <div class="tr"><span class="cn fk">kitchen_id</span><span class="ct">UUID FK</span><span class="cd">Resolved from <code>outlet_name</code> → dim_kitchens alias</span></div>
+          <div class="tr"><span class="cn fk">sku_id</span><span class="ct">UUID FK</span><span class="cd">→ dim_skus · resolved from sku_code</span></div>
+          <div class="tr"><span class="cn">sn_sku_code</span><span class="ct">TEXT</span><span class="cd">SupplyNote code · kept for traceability</span></div>
+          <div class="tr"><span class="cn">current_stock_qty</span><span class="ct">NUMERIC(12,3)</span><span class="cd">Stock as of snapshot_at</span></div>
+          <div class="tr"><span class="cn">par_level_qty</span><span class="ct">NUMERIC(12,3)</span><span class="cd">Min threshold before OOS risk</span></div>
+          <div class="tr"><span class="cn">unit</span><span class="ct">TEXT</span><span class="cd">kg | pcs | pkts | ltr</span></div>
+          <div class="tr"><span class="cn gen">is_oos</span><span class="ct">BOOL GEN</span><span class="cd">current_stock_qty = 0</span></div>
+          <div class="tr"><span class="cn gen">is_below_par</span><span class="ct">BOOL GEN</span><span class="cd">qty &lt; par_level_qty</span></div>
+          <div class="tr"><span class="cn">source_email_ref</span><span class="ct">TEXT</span><span class="cd">Email Message-ID · traceability to source</span></div>
+        </div>
+
+        <div class="tc">
+          <div class="tc-head hp"><div class="tc-name">dim_brand_kitchen</div><div class="tc-grain">1 row per brand × kitchen · replaces Brand Map sheet</div></div>
+          <div class="tr"><span class="cn pk">id</span><span class="ct">UUID PK</span><span class="cd">gen_random_uuid()</span></div>
+          <div class="tr"><span class="cn fk">brand_id</span><span class="ct">UUID FK</span><span class="cd">→ dim_brands</span></div>
+          <div class="tr"><span class="cn fk">kitchen_id</span><span class="ct">UUID FK</span><span class="cd">→ dim_kitchens</span></div>
+          <div class="tr"><span class="cn">up_store_ref_id</span><span class="ct">TEXT UNIQUE</span><span class="cd">= quint_id = Store_ID = res_id — the resolver</span></div>
+          <div class="tr"><span class="cn">sn_outlet_name</span><span class="ct">TEXT</span><span class="cd">SupplyNote outlet alias for this kitchen</span></div>
+          <div class="tr"><span class="cn">revenue_model</span><span class="ct">TEXT</span><span class="cd">MG | Rev share | Hybrid</span></div>
+          <div class="tr"><span class="cn">mg_rental_inr</span><span class="ct">NUMERIC(12,2)</span><span class="cd">Monthly MG — NEVER text, NEVER ₹ symbol</span></div>
+          <div class="tr"><span class="cn">rev_share_pct_tier1</span><span class="ct">NUMERIC(5,4)</span><span class="cd">0.1500 = 15% — NEVER "15%"</span></div>
+          <div class="tr"><span class="cn">rev_share_threshold_inr</span><span class="ct">NUMERIC(12,2)</span><span class="cd">GMV at which rev share tier flips</span></div>
+          <div class="tr"><span class="cn">rev_share_pct_tier2</span><span class="ct">NUMERIC(5,4)</span><span class="cd">Rate above threshold</span></div>
+          <div class="tr"><span class="cn">go_live_date</span><span class="ct">DATE</span><span class="cd">From Brand Map sheet</span></div>
+          <div class="tr"><span class="cn">is_active</span><span class="ct">BOOL</span><span class="cd">Current operational status</span></div>
+          <div class="tr"><span class="cn">updated_at</span><span class="ct">TIMESTAMPTZ</span><span class="cd">DEFAULT now()</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="pf"><div class="pf-brand">KYTCHENS</div><div class="pf-pg">8 of 9</div></div>
+</div>
+
+<!-- PAGE 9 — GOLDEN RULES + KPI REFERENCE -->
+<div class="page">
+<div class="ph">
+  <div class="ph-bar">Rules + KPIs</div>
+  <div class="ph-body">
+    <div class="ph-title">Golden Rules &amp; KPI Reference</div>
+    <div class="ph-sub">Rules prevent problems we already have. KPIs define exactly what we measure and from where.</div>
+
+    <div class="rg" style="margin-bottom:18px">
+      <div class="rule"><div class="rn">1</div><div class="rt"><strong>Raw is immutable.</strong> Layer 0 is append-only forever. Every source file stored exactly as received with ingested_at timestamp. Fix type problems at staging, never in raw.</div></div>
+      <div class="rule"><div class="rn">2</div><div class="rt"><strong>Financial columns are always NUMERIC.</strong> ₹ signs and % stripped at the staging boundary. The ClickHouse type regression (String financials) is corrected here.</div></div>
+      <div class="rule"><div class="rn">3</div><div class="rt"><strong>Timestamps always TIMESTAMPTZ in IST.</strong> All date strings parsed at staging. KPT calculated from typed timestamps, never from strings.</div></div>
+      <div class="rule"><div class="rn">4</div><div class="rt"><strong>up_order_id ≠ aggregator_order_id.</strong> Bravery <code>order_id</code> = UP Order ID. Complaints <code>order_id</code> = Aggregator Order ID. Mixing them is the #1 zero-row join cause.</div></div>
+      <div class="rule"><div class="rn">5</div><div class="rt"><strong>res_id = quint_id = up_store_ref_id.</strong> One concept, one column name in the schema: <code>up_store_ref_id</code>. Always stored as TEXT, never as INT.</div></div>
+      <div class="rule"><div class="rn">6</div><div class="rt"><strong>Brand and kitchen are UUID FKs in Mart and above.</strong> Text string joins on brand/location names produce wrong aggregations when names drift. UUIDs prevent this.</div></div>
+      <div class="rule"><div class="rn">7</div><div class="rt"><strong>KPT is always computed:</strong> mfr_time − ack_time in minutes. Never stored as a pre-computed value from an upstream source. Calculation only from typed TIMESTAMPTZ columns.</div></div>
+      <div class="rule"><div class="rn">8</div><div class="rt"><strong>Every pipeline is idempotent.</strong> Running an import twice produces zero change. UPSERT on natural keys always. Prevents double-row bugs on re-imports.</div></div>
+      <div class="rule"><div class="rn">9</div><div class="rt"><strong>Photo expiry is tracked.</strong> <code>photo_expires_at = photo_captured_at + 14 days</code>. An alert fires before this date. Evidence is never silently lost from Bravery's server.</div></div>
+      <div class="rule"><div class="rn">10</div><div class="rt"><strong>Inventory snapshots are appended, not overwritten.</strong> Every hourly email pull adds rows to fact_stock_snapshot with its timestamp. OOS history requires full history.</div></div>
+      <div class="rule"><div class="rn">11</div><div class="rt"><strong>Maker/checker names resolved at staging.</strong> "ganesh g" → keka_employee_id. Raw name kept as fallback. Unresolved rows go to stg_unresolved — never silently attributed to nobody.</div></div>
+      <div class="rule"><div class="rn">12</div><div class="rt"><strong>Semantic layer is read-only for the AI agent.</strong> All queries go through kytchens_semantic views only. Column names are full English phrases — they are the documentation.</div></div>
+    </div>
+
+    <div class="sl"><div class="sl-dot"></div><div class="sl-txt">KPI Reference</div></div>
+    <table class="kpi-table">
+      <tr><th>KPI</th><th>Formula</th><th>Source Table</th><th>Target</th></tr>
+      <tr class="kpi-cat"><td colspan="4">Sales & Revenue</td></tr>
+      <tr><td>GMV</td><td>subtotal_inr + packaging_charges_inr</td><td>fact_orders</td><td>—</td></tr>
+      <tr><td>NMV</td><td>gmv_inr − merchant_discount_inr</td><td>fact_orders</td><td>—</td></tr>
+      <tr><td>Total Revenue</td><td>SUM(nmv_inr) + SUM(net_sales_inr) from POS</td><td>total_revenue_daily</td><td>—</td></tr>
+      <tr><td>AOV</td><td>completed_gmv / completed_orders</td><td>daily_brand_performance</td><td>—</td></tr>
+      <tr><td>Cancellation Rate</td><td>cancelled_orders / total_orders × 100</td><td>daily_brand_performance</td><td>&lt; 5%</td></tr>
+      <tr class="kpi-cat"><td colspan="4">Operations</td></tr>
+      <tr><td>KPT (Kitchen Prep Time)</td><td>mfr_state_at − ack_state_at in minutes</td><td>fact_order_statuses → fact_orders</td><td>&lt; 12 min</td></tr>
+      <tr><td>% Orders Under KPT Target</td><td>COUNT(kpt_minutes &lt; 12) / COUNT(*) × 100</td><td>daily_brand_performance</td><td>&gt; 85%</td></tr>
+      <tr><td>Complaint Rate</td><td>orders with complaint / completed_orders × 100</td><td>daily_evidence_summary</td><td>&lt; 1 per 100</td></tr>
+      <tr><td>Kitchen Error Rate</td><td>is_kitchen_error = true / complaint count × 100</td><td>daily_evidence_summary</td><td>&lt; 30%</td></tr>
+      <tr><td>Photo Coverage</td><td>is_photo_captured = true / total orders × 100</td><td>fact_order_evidence</td><td>&gt; 95%</td></tr>
+      <tr><td>Evidence Expiry Alert</td><td>COUNT where photo_expires_at &lt; now() + 48h</td><td>fact_order_evidence</td><td>0 unalerted</td></tr>
+      <tr class="kpi-cat"><td colspan="4">Inventory</td></tr>
+      <tr><td>OOS Rate</td><td>is_oos = true SKU-kitchen combos / total active SKUs</td><td>fact_stock_snapshot</td><td>—</td></tr>
+      <tr><td>Below Par Rate</td><td>is_below_par = true count by kitchen</td><td>daily_stock_health</td><td>—</td></tr>
+      <tr><td>OOS Duration</td><td>Time between first is_oos=true and next is_oos=false</td><td>fact_stock_snapshot time series</td><td>—</td></tr>
+      <tr class="kpi-cat"><td colspan="4">Finance</td></tr>
+      <tr><td>Brand Revenue Share</td><td>MIN(GMV, threshold) × tier1_pct + MAX(0, GMV−threshold) × tier2_pct</td><td>monthly_settlement ← dim_brand_kitchen</td><td>—</td></tr>
+      <tr><td>Kytchens Monthly Income</td><td>GREATEST(mg_rental_inr, total_rev_share)</td><td>monthly_settlement</td><td>—</td></tr>
+      <tr><td>COGS % (POS)</td><td>bill_cost_price_inr / net_sales_inr × 100</td><td>fact_pos_sales</td><td>—</td></tr>
+    </table>
+  </div>
+</div>
+<div class="pf"><div class="pf-brand">KYTCHENS</div><div class="pf-pg">9 of 9</div></div>
+</div>
+
+</body>
+</html>

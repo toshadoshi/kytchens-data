@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kytchens · Data Architecture Summary</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --o1:#F4631A;--o2:#C94E0E;--o3:#F7894A;--o4:#FDE8D8;--o5:#FFF6F0;
+  --ink:#1C1007;--ink2:#4A3728;--ink3:#8C7060;--line:#EDD5C0;--smoke:#FAF5F0;
+  --green:#1E8449;--gl:#D5F5E3;--blue:#1A5276;--bl:#D6EAF8;
+  --red:#922B21;--rl:#FADBD8;--teal:#0E6655;--tl:#D1F2EB;
+}
+body{font-family:'Poppins','Liberation Sans',sans-serif;background:#EDE5DC;color:var(--ink);padding:32px;}
+.page{width:1060px;margin:0 auto 32px;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 2px 24px rgba(0,0,0,.08);}
+
+/* HEADER BAND */
+.hband{background:linear-gradient(135deg,#140C04 0%,#2E1208 40%,#C94E0E 100%);padding:28px 44px;display:flex;justify-content:space-between;align-items:flex-end;}
+.hband-title{font-size:28px;font-weight:900;color:#fff;letter-spacing:-1px;line-height:1;}
+.hband-title span{color:#F7894A;}
+.hband-sub{font-size:11px;font-weight:300;color:rgba(255,255,255,.6);margin-top:5px;}
+.hband-tag{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);text-align:right;}
+
+/* BODY */
+.body{padding:28px 44px 32px;}
+
+/* PROBLEM STATEMENT */
+.problem{background:var(--rl);border-left:4px solid var(--red);border-radius:8px;padding:14px 18px;margin-bottom:22px;}
+.problem-title{font-size:11px;font-weight:700;color:var(--red);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;}
+.problem-text{font-size:11px;color:var(--ink2);line-height:1.6;}
+
+/* THREE COLUMN GRID */
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:22px;}
+.col-card{border:1.5px solid var(--line);border-radius:11px;overflow:hidden;}
+.col-head{padding:10px 14px;font-size:11px;font-weight:700;color:#fff;}
+.col-body{padding:11px 14px;font-size:10px;color:var(--ink2);line-height:1.6;}
+.col-body li{margin-left:14px;margin-bottom:3px;}
+.ch-o{background:linear-gradient(135deg,var(--o2),var(--o1));}
+.ch-g{background:linear-gradient(135deg,#117A65,#1ABC9C);}
+.ch-b{background:linear-gradient(135deg,#154360,#2471A3);}
+
+/* FLOW STRIP */
+.flow-strip{display:flex;align-items:center;gap:0;margin-bottom:22px;background:var(--smoke);border-radius:11px;padding:14px 18px;overflow-x:auto;}
+.fs-node{border-radius:8px;padding:8px 12px;font-size:9.5px;font-weight:600;text-align:center;border:1.5px solid;min-width:90px;flex-shrink:0;}
+.fs-src{background:var(--o5);border-color:var(--o3);color:var(--o2);}
+.fs-l0{background:var(--o4);border-color:var(--o1);color:var(--o2);}
+.fs-l1{background:#FFF3E0;border-color:#F5A623;color:#7D5A00;}
+.fs-l2{background:var(--tl);border-color:#48C9B0;color:var(--teal);}
+.fs-l3{background:var(--bl);border-color:#5DADE2;color:var(--blue);}
+.fs-l4{background:#F5EEF8;border-color:#A569BD;color:#5B2C7A;}
+.fs-sub{font-size:8px;font-weight:400;opacity:.7;margin-top:1px;}
+.fs-arr{width:24px;flex-shrink:0;text-align:center;color:var(--o1);font-size:10px;}
+.fs-label{font-size:8px;font-weight:600;color:var(--ink3);writing-mode:horizontal-tb;margin:0 2px;}
+
+/* SOURCE TABLE */
+.src-table{width:100%;border-collapse:collapse;margin-bottom:22px;font-size:10px;}
+.src-table th{background:var(--o1);color:#fff;padding:7px 12px;text-align:left;font-size:9px;font-weight:600;letter-spacing:.5px;}
+.src-table td{padding:6px 12px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.4;}
+.src-table tr:last-child td{border-bottom:none;}
+.src-table tr:nth-child(even) td{background:var(--o5);}
+.badge{font-size:8px;font-weight:700;padding:2px 7px;border-radius:100px;white-space:nowrap;}
+.b-live{background:var(--gl);color:var(--green);}
+.b-email{background:#FFF3E0;color:#7D5A00;}
+.b-csv{background:#F5EEF8;color:#5B2C7A;}
+.b-sheet{background:var(--rl);color:var(--red);}
+
+/* KEY DECISIONS */
+.decisions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:22px;}
+.dec{border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;}
+.dec-title{font-size:10px;font-weight:700;color:var(--o2);margin-bottom:5px;display:flex;align-items:center;gap:7px;}
+.dec-icon{font-size:14px;}
+.dec-text{font-size:10px;color:var(--ink3);line-height:1.5;}
+.dec-text strong{color:var(--ink2);}
+
+/* FOOTER */
+.foot{background:var(--o5);border-top:1px solid var(--line);padding:10px 44px;display:flex;justify-content:space-between;align-items:center;}
+.foot-brand{font-size:10px;font-weight:800;color:var(--o1);letter-spacing:1px;}
+.foot-note{font-size:9px;color:var(--ink3);}
+
+/* PAGE 2 */
+.section-title{font-size:14px;font-weight:800;color:var(--o2);margin-bottom:4px;margin-top:20px;}
+.section-sub{font-size:10px;color:var(--ink3);margin-bottom:14px;}
+
+/* TABLE DEF SUMMARY */
+.tds-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px;margin-bottom:18px;}
+.tds{border:1.5px solid var(--line);border-radius:10px;overflow:hidden;}
+.tds-h{padding:8px 12px;font-size:10px;font-weight:700;color:#fff;display:flex;justify-content:space-between;align-items:center;}
+.tds-grain{font-size:8px;opacity:.7;}
+.tds-body{padding:8px 12px;}
+.tds-row{font-size:9px;color:var(--ink2);padding:2px 0;border-bottom:1px solid var(--o5);display:flex;justify-content:space-between;}
+.tds-row:last-child{border-bottom:none;}
+.tds-key{font-family:'Courier New',monospace;font-weight:600;font-size:8.5px;color:var(--o2);}
+.ho{background:linear-gradient(135deg,var(--o2),var(--o1));}
+.ht{background:linear-gradient(135deg,#0E6655,#17A589);}
+.hb{background:linear-gradient(135deg,#154360,#1F618D);}
+.hp{background:linear-gradient(135deg,#4A235A,#7D3C98);}
+.hg{background:linear-gradient(135deg,#145A32,#229954);}
+.hd{background:linear-gradient(135deg,#2C3E50,#4A6080);}
+
+/* ID MAP STRIP */
+.id-strip{display:flex;flex-direction:column;gap:7px;margin-bottom:18px;}
+.id-row{display:flex;align-items:center;border-radius:8px;overflow:hidden;border:1.5px solid var(--line);}
+.id-name{padding:7px 12px;font-family:'Courier New',monospace;font-size:10px;font-weight:700;color:var(--o2);background:var(--o4);width:220px;flex-shrink:0;border-right:1px solid var(--line);}
+.id-desc{padding:7px 12px;font-size:9.5px;color:var(--ink3);flex:1;}
+.id-lives{padding:7px 12px;font-size:9px;font-family:'Courier New',monospace;color:var(--blue);background:var(--bl);width:260px;flex-shrink:0;border-left:1px solid var(--line);}
+</style>
+</head>
+<body>
+
+<!-- PAGE 1 -->
+<div class="page">
+  <div class="hband">
+    <div>
+      <div class="hband-title">Kytchens<br><span>Data Architecture</span></div>
+      <div class="hband-sub">Executive Summary — what we're building, why, and how it fits together</div>
+    </div>
+    <div class="hband-tag">April 2026<br>Confidential</div>
+  </div>
+
+  <div class="body">
+
+    <!-- PROBLEM -->
+    <div class="problem">
+      <div class="problem-title">The Problem We're Solving</div>
+      <div class="problem-text">Kytchens generates rich operational data across 7 sources but only one source — UrbanPiper orders — lives in a database. Everything else (inventory, complaints, photo evidence, financials, staff, offline sales) sits in Google Sheets, email inboxes, and third-party portals. Nothing is connected. There is no single place to answer the question: <em>"how did this kitchen perform today, and why?"</em> The architecture below changes that.</div>
+    </div>
+
+    <!-- THREE COLUMNS -->
+    <div class="three-col">
+      <div class="col-card">
+        <div class="col-head ch-o">What exists and works ✓</div>
+        <div class="col-body"><ul>
+          <li>UrbanPiper orders flow into ClickHouse via live webhook — 1M+ order rows</li>
+          <li>aggregated_data table already pre-aggregates GMV, orders by brand × location × date with correct types</li>
+          <li>Item-level sales (transformed_itemised_sales) has category, Item_ID, Item_Ref_ID</li>
+          <li>Order state transitions (prime_order_statuses) exist — KPT is calculable</li>
+        </ul></div>
+      </div>
+      <div class="col-card">
+        <div class="col-head" style="background:linear-gradient(135deg,#922B21,#E74C3C)">What's broken ✗</div>
+        <div class="col-body"><ul>
+          <li>All financial columns in ClickHouse are stored as String — every revenue calculation requires string parsing</li>
+          <li>Order status timestamps are String — KPT computed from string subtraction, a silent error source</li>
+          <li>All joins on brand/location text strings — case drift produces wrong aggregations silently</li>
+          <li>No brand_id or kitchen_id UUID anywhere in the schema</li>
+        </ul></div>
+      </div>
+      <div class="col-card">
+        <div class="col-head ch-b">What needs to be built ○</div>
+        <div class="col-body"><ul>
+          <li>order_id_map — the bridge between UP Order ID (Bravery) and Aggregator Order ID (Complaints)</li>
+          <li>Inventory pipeline — hourly SupplyNote email → timestamped database table, not a Google Sheet</li>
+          <li>Evidence pipeline — Bravery CSV (photo + maker + checker) + Complaints email → one row per order</li>
+          <li>dim_brand_kitchen — brand map sheet with typed NUMERIC fields replacing text</li>
+        </ul></div>
+      </div>
+    </div>
+
+    <!-- FLOW STRIP -->
+    <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);margin-bottom:8px;">The 5-Layer Pipeline — how every source flows into the system</div>
+    <div class="flow-strip">
+      <div class="fs-node fs-src">Source<div class="fs-sub">email / CSV / webhook</div></div>
+      <div class="fs-arr">→</div>
+      <div class="fs-node fs-l0">Layer 0 · Raw<div class="fs-sub">append-only forever</div></div>
+      <div class="fs-arr">→</div>
+      <div class="fs-node fs-l1">Layer 1 · Staging<div class="fs-sub">type correction</div></div>
+      <div class="fs-arr">→</div>
+      <div class="fs-node fs-l2">Layer 2 · Mart<div class="fs-sub">star schema · UUID FKs</div></div>
+      <div class="fs-arr">→</div>
+      <div class="fs-node fs-l3">Layer 3 · Analytics<div class="fs-sub">15-min KPI refresh</div></div>
+      <div class="fs-arr">→</div>
+      <div class="fs-node fs-l4">Layer 4 · Semantic<div class="fs-sub">AI-readable views</div></div>
+    </div>
+    <div style="font-size:9px;color:var(--ink3);margin-top:-10px;margin-bottom:18px;padding:0 4px;">Each layer has one job. Raw stores everything as-is. Staging fixes types. Mart builds the star schema with UUID FKs. Analytics pre-aggregates KPIs so dashboards need zero joins. Semantic layer uses plain-English column names so the Kitchen Intelligence AI agent can query it without any external context.</div>
+
+    <!-- SOURCE TABLE -->
+    <table class="src-table">
+      <tr><th>Source</th><th>How it arrives</th><th>What it contains</th><th>Target table</th><th>Status</th></tr>
+      <tr><td><strong>UrbanPiper</strong></td><td><span class="badge b-live">Webhook ✓</span></td><td>Orders, items, status transitions, complaints (partial)</td><td>fact_orders · fact_items · fact_order_statuses</td><td>In ClickHouse — type correction needed</td></tr>
+      <tr><td><strong>SupplyNote</strong></td><td><span class="badge b-email">Hourly email</span></td><td>Stock snapshot per SKU per kitchen — current qty, par level</td><td>fact_stock_snapshot</td><td>Manual sheet → needs automated pipeline</td></tr>
+      <tr><td><strong>Bravery App</strong></td><td><span class="badge b-csv">Alt-day CSV</span></td><td>Photo filename, UP order ID, aggregator order ID, maker, Checker, supervisor, capture time</td><td>fact_order_evidence (photo + QC half)</td><td>No pipeline exists yet</td></tr>
+      <tr><td><strong>Restaverse</strong></td><td><span class="badge b-email">Daily email</span></td><td>Complaints: aggregator order ID, res_id, reason, comment, refund amount, status</td><td>fact_order_evidence (complaint half)</td><td>Manual process — needs Edge Function</td></tr>
+      <tr><td><strong>Brand Map Sheet</strong></td><td><span class="badge b-sheet">Manual sheet</span></td><td>quint_id, MG rental, rev share %, go-live date per brand × location</td><td>dim_brand_kitchen</td><td>One-time migration needed</td></tr>
+      <tr><td><strong>Keka HRMS</strong></td><td><span class="badge b-email">API sync</span></td><td>Employee name, designation, kitchen assignment</td><td>dim_employees</td><td>No integration — needed to resolve maker/checker names</td></tr>
+      <tr><td><strong>POS / Manual Sales</strong></td><td><span class="badge b-sheet">Manual entry</span></td><td>Bill total, net sales, cost price (COGS), GST breakdown, employee name</td><td>fact_pos_sales</td><td>No canonical schema — needs definition</td></tr>
+    </table>
+
+    <!-- KEY DECISIONS -->
+    <div class="decisions">
+      <div class="dec">
+        <div class="dec-title"><span class="dec-icon">🔑</span> The most important table: order_id_map</div>
+        <div class="dec-text">Bravery uses <strong>UP Order ID</strong> as its key. Restaverse complaints use <strong>Aggregator Order ID</strong> (Swiggy/Zomato's own ID). These are different numbers for the same order. The <strong>order_id_map</strong> table holds both together — it's the only place they coexist. Every join between evidence and complaints runs through this table. Build it first.</div>
+      </div>
+      <div class="dec">
+        <div class="dec-title"><span class="dec-icon">🗄️</span> ClickHouse stays, Supabase is added</div>
+        <div class="dec-text">ClickHouse handles 177M+ order rows at speed — it stays as the orders analytics engine. <strong>Supabase (Postgres)</strong> becomes the operational layer for all new modules: inventory, evidence, complaints, financials, people. A Semantic layer (Layer 4) unifies both into one query interface for dashboards and the AI agent.</div>
+      </div>
+      <div class="dec">
+        <div class="dec-title"><span class="dec-icon">📸</span> Evidence expires in 14 days</div>
+        <div class="dec-text">Bravery photos are deleted from their server 14 days after capture. <strong>photo_expires_at</strong> is stored as a computed column in every evidence row. An alert fires 48 hours before expiry. Without this, complaint evidence is silently lost — and there's no way to know a photo ever existed.</div>
+      </div>
+      <div class="dec">
+        <div class="dec-title"><span class="dec-icon">💰</span> Financial types: the biggest quick win</div>
+        <div class="dec-text">The ClickHouse migration stored all financial columns as <strong>String</strong> — Sub_Total_Amount, Merchant_Discount, Total_Taxes etc. Every revenue query today parses strings before doing arithmetic. Correcting these to <strong>NUMERIC(12,2)</strong> at the Staging layer is the fastest improvement to data reliability.</div>
+      </div>
+    </div>
+
+  </div>
+  <div class="foot"><div class="foot-brand">KYTCHENS</div><div class="foot-note">Page 1 of 2 · Data Architecture Executive Summary · April 2026</div></div>
+</div>
+
+<!-- PAGE 2 -->
+<div class="page">
+  <div class="hband" style="padding:20px 44px;">
+    <div><div class="hband-title" style="font-size:20px;">Table Reference &amp; <span>Key ID Map</span></div><div class="hband-sub">The 13 core tables and how every ID connects across sources</div></div>
+    <div class="hband-tag">April 2026<br>Confidential</div>
+  </div>
+
+  <div class="body" style="padding-top:20px;">
+
+    <div class="section-title">Core Table Summary</div>
+    <div class="section-sub">Every table, its grain, and the key join columns. Full column definitions in the main architecture document.</div>
+
+    <div class="tds-grid">
+      <div class="tds"><div class="tds-h ho"><span>order_id_map</span><span class="tds-grain">1 per order · build first</span></div><div class="tds-body">
+        <div class="tds-row"><span>up_order_id</span><span class="tds-key">UP ID</span></div>
+        <div class="tds-row"><span>aggregator_order_id</span><span class="tds-key">Swiggy/Zomato ID</span></div>
+        <div class="tds-row"><span>up_store_ref_id</span><span class="tds-key">= quint_id</span></div>
+        <div class="tds-row"><span>brand_id + kitchen_id</span><span class="tds-key">UUID FKs</span></div>
+      </div></div>
+
+      <div class="tds"><div class="tds-h ho"><span>fact_orders</span><span class="tds-grain">1 per order</span></div><div class="tds-body">
+        <div class="tds-row"><span>up_order_id · aggregator_order_id</span><span class="tds-key">both IDs</span></div>
+        <div class="tds-row"><span>gmv_inr · nmv_inr · subtotal</span><span class="tds-key">NUMERIC</span></div>
+        <div class="tds-row"><span>kpt_minutes</span><span class="tds-key">GENERATED</span></div>
+        <div class="tds-row"><span>brand_id + kitchen_id</span><span class="tds-key">UUID FKs</span></div>
+      </div></div>
+
+      <div class="tds"><div class="tds-h ho"><span>fact_items</span><span class="tds-grain">1 per item per order</span></div><div class="tds-body">
+        <div class="tds-row"><span>up_order_id · aggregator_order_id</span><span class="tds-key">both IDs</span></div>
+        <div class="tds-row"><span>item_id · item_ref_id</span><span class="tds-key">two item IDs</span></div>
+        <div class="tds-row"><span>sku_id</span><span class="tds-key">→ dim_skus</span></div>
+        <div class="tds-row"><span>quantity · unit_price · item_total</span><span class="tds-key">NUMERIC</span></div>
+      </div></div>
+
+      <div class="tds"><div class="tds-h ho"><span>fact_order_statuses</span><span class="tds-grain">1 per state transition</span></div><div class="tds-body">
+        <div class="tds-row"><span>up_order_id</span><span class="tds-key">UP ID</span></div>
+        <div class="tds-row"><span>state · prev_state</span><span class="tds-key">transition</span></div>
+        <div class="tds-row"><span>state_at</span><span class="tds-key">TIMESTAMPTZ</span></div>
+        <div class="tds-row"><span>kpt_minutes (MFR row only)</span><span class="tds-key">GENERATED</span></div>
+      </div></div>
+
+      <div class="tds"><div class="tds-h hb"><span>fact_order_evidence</span><span class="tds-grain">1 per order · Bravery + Complaints</span></div><div class="tds-body">
+        <div class="tds-row"><span>up_order_id · aggregator_order_id</span><span class="tds-key">both IDs</span></div>
+        <div class="tds-row"><span>photo_url · photo_expires_at</span><span class="tds-key">14-day window</span></div>
+        <div class="tds-row"><span>maker · checker · supervisor</span><span class="tds-key">→ dim_employees</span></div>
+        <div class="tds-row"><span>complaint_reason · refund · status</span><span class="tds-key">from Restaverse</span></div>
+      </div></div>
+
+      <div class="tds"><div class="tds-h ht"><span>fact_stock_snapshot</span><span class="tds-grain">1 per SKU × kitchen × time</span></div><div class="tds-body">
+        <div class="tds-row"><span>snapshot_at (every pull kept)</span><span class="tds-key">TIMESTAMPTZ</span></div>
+        <div class="tds-row"><span>kitchen_id · sku_id</span><span class="tds-key">UUID FKs</span></div>
+        <div class="tds-row"><span>current_stock_qty · par_level_qty</span><span class="tds-key">NUMERIC</span></div>
+        <div class="tds-row"><span>is_oos · is_below_par</span><span class="tds-key">GENERATED</span></div>
+      </div></div>
+
+      <div class="tds"><div class="tds-h ht"><span>fact_stock_events</span><span class="tds-grain">1 per stock movement</span></div><div class="tds-body">
+        <div class="tds-row"><span>action: in | out</span><span class="tds-key">UP webhook</span></div>
+        <div class="tds-row"><span>kitchen_id · sku_id</span><span class="tds-key">UUID FKs</span></div>
+        <div class="tds-row"><span>item_ref_id</span><span class="tds-key">→ dim_skus</span></div>
+        <div class="tds-row"><span>event_at · quantity</span><span class="tds-key">movement detail</span></div>
+      </div></div>
+
+      <div class="tds"><div class="tds-h hg"><span>fact_pos_sales</span><span class="tds-grain">1 per POS bill</span></div><div class="tds-body">
+        <div class="tds-row"><span>bill_number · brand_id · kitchen_id</span><span class="tds-key">identity</span></div>
+        <div class="tds-row"><span>bill_total · net_sales · cost_price</span><span class="tds-key">NUMERIC</span></div>
+        <div class="tds-row"><span>gst_5 · gst_12 · gst_18</span><span class="tds-key">tax breakdown</span></div>
+        <div class="tds-row"><span>employee_id</span><span class="tds-key">→ dim_employees</span></div>
+      </div></div>
+
+      <div class="tds"><div class="tds-h hp"><span>dim_brand_kitchen</span><span class="tds-grain">1 per brand × kitchen</span></div><div class="tds-body">
+        <div class="tds-row"><span>up_store_ref_id = quint_id</span><span class="tds-key">resolver key</span></div>
+        <div class="tds-row"><span>mg_rental_inr</span><span class="tds-key">NUMERIC not text</span></div>
+        <div class="tds-row"><span>rev_share_pct_tier1 · tier2</span><span class="tds-key">ratio not %</span></div>
+        <div class="tds-row"><span>rev_share_threshold · go_live_date</span><span class="tds-key">typed</span></div>
+      </div></div>
+
+      <div class="tds"><div class="tds-h hp"><span>dim_brands · dim_kitchens</span><span class="tds-grain">canonical identity tables</span></div><div class="tds-body">
+        <div class="tds-row"><span>brand_id / kitchen_id</span><span class="tds-key">UUID PK</span></div>
+        <div class="tds-row"><span>canonical name</span><span class="tds-key">single truth</span></div>
+        <div class="tds-row"><span>aliases[ ]</span><span class="tds-key">for CSV matching</span></div>
+        <div class="tds-row"><span>sn_outlet_name</span><span class="tds-key">SupplyNote alias</span></div>
+      </div></div>
+
+      <div class="tds"><div class="tds-h hp"><span>dim_employees</span><span class="tds-grain">1 per employee · from Keka</span></div><div class="tds-body">
+        <div class="tds-row"><span>keka_employee_id</span><span class="tds-key">PK · canonical</span></div>
+        <div class="tds-row"><span>full_name</span><span class="tds-key">for name matching</span></div>
+        <div class="tds-row"><span>designation · kitchen_id</span><span class="tds-key">assignment</span></div>
+        <div class="tds-row"><span>Resolves maker/checker/supervisor from CSV</span></div>
+      </div></div>
+
+      <div class="tds"><div class="tds-h hg"><span>dim_skus</span><span class="tds-grain">1 per SKU · item dictionary</span></div><div class="tds-body">
+        <div class="tds-row"><span>sku_id</span><span class="tds-key">UUID PK</span></div>
+        <div class="tds-row"><span>item_id · item_ref_id · sn_sku_code</span><span class="tds-key">3 system IDs</span></div>
+        <div class="tds-row"><span>display_name · category · unit</span><span class="tds-key">clean attrs</span></div>
+        <div class="tds-row"><span>is_customer_orderable · last_seen_date</span><span class="tds-key">flags</span></div>
+      </div></div>
+
+      <div class="tds"><div class="tds-h hd"><span>kytchens_semantic views</span><span class="tds-grain">AI agent reads only this layer</span></div><div class="tds-body">
+        <div class="tds-row"><span>v_orders · v_evidence_complaints</span><span class="tds-key">flat · pre-joined</span></div>
+        <div class="tds-row"><span>v_brand_performance · v_stock</span><span class="tds-key">KPI views</span></div>
+        <div class="tds-row"><span>v_financials · v_revenue</span><span class="tds-key">settlement</span></div>
+        <div class="tds-row"><span>Column names = plain English phrases</span><span class="tds-key">read-only</span></div>
+      </div></div>
+    </div>
+
+    <!-- ID MAP -->
+    <div class="section-title">The Universal ID Map</div>
+    <div class="section-sub">Six identifiers, three systems, one consistent naming convention.</div>
+    <div class="id-strip">
+      <div class="id-row"><div class="id-name">up_order_id</div><div class="id-desc">UrbanPiper's internal order ID. Bravery CSV calls it <code>order_id</code>. ClickHouse calls it <code>Order_ID</code>.</div><div class="id-lives">fact_orders · fact_items · fact_order_evidence · order_id_map</div></div>
+      <div class="id-row"><div class="id-name">aggregator_order_id</div><div class="id-desc">Swiggy/Zomato's own ID. Restaverse complaints call it <code>order_id</code>. Bravery calls it <code>aggregator_order_no</code>. ≠ up_order_id.</div><div class="id-lives">order_id_map · fact_order_evidence · raw_complaints</div></div>
+      <div class="id-row"><div class="id-name">up_store_ref_id</div><div class="id-desc">The brand×kitchen resolver. Called <code>quint_id</code> in Brand Map, <code>Store_ID</code> in ClickHouse, <code>res_id</code> in Restaverse complaints. Always TEXT, never INT.</div><div class="id-lives">dim_brand_kitchen · order_id_map · raw_complaints.res_id</div></div>
+      <div class="id-row"><div class="id-name">sku_id</div><div class="id-desc">Our internal UUID for each SKU. Resolves from three source IDs: item_id (UrbanPiper), item_ref_id (aggregator + stock events), sn_sku_code (SupplyNote).</div><div class="id-lives">dim_skus · fact_items · fact_stock_snapshot · fact_stock_events</div></div>
+      <div class="id-row"><div class="id-name">keka_employee_id</div><div class="id-desc">Resolves free-text names in Bravery CSV: <code>maker</code> ("ganesh g"), <code>Checker</code> ("Pawan B"), <code>order_captured_by</code> ("Chembur Supervisor").</div><div class="id-lives">dim_employees · fact_order_evidence (×3 cols) · fact_pos_sales</div></div>
+    </div>
+
+    <div style="background:var(--o4);border-left:3px solid var(--o1);border-radius:8px;padding:11px 15px;font-size:10px;color:var(--ink2);line-height:1.6;">
+      <strong style="color:var(--o2)">The end state in one sentence:</strong> Any person in Kytchens — a KM asking why their complaint rate spiked, a brand partner checking their GMV, the Founder's Office calculating monthly settlements — types a question in plain English and gets a correct, cited answer from a single system backed by clean, connected, typed data. That's what this architecture is for.
+    </div>
+  </div>
+  <div class="foot"><div class="foot-brand">KYTCHENS</div><div class="foot-note">Page 2 of 2 · Data Architecture Executive Summary · April 2026</div></div>
+</div>
+
+</body>
+</html>
